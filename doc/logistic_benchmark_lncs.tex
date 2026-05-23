@@ -68,7 +68,7 @@ networks---near-planar topology, low vertex degree, short edges and large
 diameters---by combining Zipf-distributed city sizes, a spatial-network budget
 model trading edge-building cost against routing convenience,
 centrality-driven storage capacities, and a doubly constrained gravity demand
-model. We release 34 fully synthetic instances ($10$--$150$ storages) and 15
+model. We release 35 fully synthetic instances ($10$--$150$ storages) and 15
 real-geometry instances in an open, self-describing, fully reproducible file
 format. An empirical characterisation computed directly from the released files
 shows that synthetic and real-geometry instances are structurally consistent
@@ -390,7 +390,7 @@ volume, so that not every pair exchanges goods, as in real demand matrices.
 \label{sec:corpus}
 
 The corpus has two parts. The \textbf{synthetic} set, produced fully by the
-pipeline, contains $34$ instances: $10$ with $10$ storages, $7$ each with $20$
+pipeline, contains $35$ instances: $10$ with $10$ storages, $7$ each with $20$
 and $30$, $5$ with $50$, $3$ with $100$ and $3$ with $150$. The
 \textbf{real-geometry} set contains $15$ instances built on the calibration
 regions ($11$ to $90$ storages): the vertex coordinates and populations come from
@@ -518,64 +518,69 @@ controllable proxy for real geography.
 \section{Use Case: Difficulty and Solver Discrimination}
 \label{sec:usecase}
 
-A benchmark is only useful if its instances vary in difficulty and separate
-solvers. We illustrate this with three reference quantities obtained on the
-corpus: the optimum of the linear relaxation (LP, a lower bound), the relaxation
-rounded up to integer vehicle counts (Rounded LP, a feasible upper bound), and an
-exact MILP solved by HiGHS \cite{highs} under a wall-clock budget proportional to
-size. To place them on a common scale we report each as a ratio to the objective
-returned by a metaheuristic solver (GVNS) run within the same budget; a value
-below $1$ is a lower bound and above $1$ is worse.
+A benchmark is only useful if its instances vary in difficulty. We quantify
+difficulty with three standard, solver-agnostic quantities, all expressed
+relative to the linear-relaxation optimum (LP), which is a valid lower bound on
+the true optimum. The first is the LP value itself (ratio $1$ by definition). The
+second is the trivial feasible solution obtained by rounding the relaxation up to
+integer vehicle counts (Rounded LP); the ratio $\text{RoundedLP}/\text{LP}\ge1$
+brackets the optimality gap and needs no solver beyond a linear program. The
+third is the best feasible solution returned by a general-purpose exact MILP
+solver, HiGHS \cite{highs}, under a wall-clock budget proportional to instance
+size; the ratio $\text{MILP}/\text{LP}\ge1$ measures how far a standard exact
+method gets within a fixed budget. None of these quantities depends on a bespoke
+algorithm, so the difficulty they reveal is a property of the instances, not of
+any particular method.
 
-Table~\ref{tab:usecase} and Figure~\ref{fig:ratios} show two clear trends.
-First, the LP lower bound is tight on small instances (ratio $0.97$ at $|V|=10$)
-and loosens steadily with size (down to $0.36$ at $|V|=150$): the relaxation gap,
-a proxy for combinatorial hardness, grows by roughly an order of magnitude across
-the corpus. Second, the exact MILP becomes impractical exactly where the gap
-widens---for $|V|\ge100$ it returns no solution within the budget---while the
-Rounded-LP upper bound degrades from $1.19\times$ to over $2\times$. The corpus
-therefore spans the full range from instances solvable to near-optimality to
-instances on which exact methods fail in reasonable time, which is precisely the
-discrimination a benchmark must provide. The real-geometry instances
-(Fig.~\ref{fig:ratios}, right) reproduce these trends quantitatively: the LP
-ratio falls from $0.99$ on Sweden ($|V|=45$) to $0.76$ on European Russia
-($|V|=90$), while the exact MILP---feasible only up to $|V|=59$ within the
-budget---already costs $1.3$ to $1.5\times$ the metaheuristic objective on the
-larger U.S.\ states (e.g.\ $1.48$ on Illinois, $1.38$ on Georgia). That the same
-hardness signature appears on networks built from real geography confirms that
-difficulty, and not only structure, transfers between the synthetic and
-real-geometry sets---so a solver tuned on the synthetic corpus can be expected to
-behave comparably on real inputs.
+Table~\ref{tab:usecase} and Figure~\ref{fig:difficulty} show two clear trends.
+First, the relaxation gap widens monotonically with size: the trivial upper bound
+sits $1.23\times$ above the LP lower bound at $|V|=10$ but $5.6\times$ above it at
+$|V|=150$, so the interval that any solver must close grows by roughly an order of
+magnitude across the corpus. Second, the exact solver degrades and then fails
+exactly where the gap widens: $\text{MILP}/\text{LP}$ rises from $1.03$ at
+$|V|=10$ to $1.94$ at $|V|=50$, and for $|V|\ge100$ HiGHS returns no feasible
+solution at all within the budget. The corpus therefore spans the full range from
+instances an exact solver closes to near-optimality to instances on which it
+fails outright, which is precisely the discrimination a benchmark must provide.
+The real-geometry instances (Fig.~\ref{fig:difficulty}, right) reproduce these
+trends: the upper-bound ratio ranges from $1.31$ on the smallest networks to
+$3.95$ on European Russia ($|V|=90$), and the exact solver is feasible only up to
+$|V|=59$. That the same hardness signature appears on networks built from real
+geography confirms that difficulty, and not only structure, transfers between the
+synthetic and real-geometry sets.
 
 \begin{table}[t]
 \centering
-\caption{Reference quantities on the synthetic set, aggregated by size and
-expressed as ratios to the metaheuristic (GVNS) objective. ``--'' marks sizes
-where the exact MILP returned no solution within the time budget.}
+\caption{Instance difficulty on the synthetic set, aggregated by size and
+expressed as ratios to the LP lower bound (mean over the $n$ instances with
+reference solutions). RoundedLP/LP brackets the optimality gap; MILP/LP is the
+time-limited exact solver. ``--'' marks sizes where HiGHS returned no feasible
+solution within the budget.}
 \label{tab:usecase}
 \setlength{\tabcolsep}{8pt}
-\begin{tabular}{rrrrr}
+\begin{tabular}{rrrr}
 \toprule
-$|V|$ & $n$ & LP (lower) & Rounded LP (upper) & Exact MILP\\
+$|V|$ & $n$ & Rounded LP / LP & Exact MILP / LP\\
 \midrule
-10  & 10 & 0.970 & 1.191 & 1.001\\
-20  & 7  & 0.962 & 1.577 & 1.014\\
-30  & 7  & 0.916 & 2.177 & 1.071\\
-50  & 5  & 0.802 & 2.776 & 1.543\\
-100 & 3  & 0.524 & 2.114 & --\\
-150 & 3  & 0.359 & 2.002 & --\\
+10  & 10 & 1.229 & 1.032\\
+20  & 7  & 1.640 & 1.055\\
+30  & 7  & 2.391 & 1.171\\
+50  & 5  & 3.485 & 1.935\\
+100 & 3  & 4.044 & --\\
+150 & 1  & 5.572 & --\\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{lfigs/ratios.png}
-\caption{Reference quantities as ratios to GVNS versus network size. Left:
-synthetic instances (means per size). Right: real-geometry networks. The
-LP lower bound diverges and the exact MILP becomes infeasible as size grows,
-demonstrating that the corpus discriminates difficulty.}
-\label{fig:ratios}
+\includegraphics[width=\textwidth]{lfigs/difficulty.png}
+\caption{Instance difficulty as ratios to the LP lower bound versus network size.
+Left: synthetic instances (means per size). Right: real-geometry networks. The
+trivial upper bound diverges from the lower bound and the time-limited exact
+solver becomes infeasible as size grows, demonstrating that the corpus
+discriminates difficulty without reference to any bespoke solver.}
+\label{fig:difficulty}
 \end{figure}
 
 % ===============================================================
@@ -604,7 +609,7 @@ Zipf city sizes, a spatial-network budget model, centrality-driven capacities an
 a gravity demand model, the generator reproduces the near-planar topology, low
 degree, short edges and large diameters of real upper-level distribution
 networks. An empirical characterisation computed directly from the released
-files shows that the $34$ synthetic and $15$ real-geometry instances are
+files shows that the $35$ synthetic and $15$ real-geometry instances are
 structurally consistent (KS distances $\approx0.1$ with small, quantified mean
 deviations), and a baseline-solver study demonstrates that the corpus
 discriminates instance difficulty across orders of magnitude. The benchmark,
