@@ -1,0 +1,61 @@
+# ---------------------------------------------------------------
+# Optimal-Logistic-Net — .gitignore
+# ---------------------------------------------------------------
+
+# --- OS / desktop junk ---
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
+
+# --- Editors / tooling ---
+.claude/
+.vscode/
+.idea/
+*.swp
+*~
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+
+# --- LaTeX build artifacts (keep .tex and the figures) ---
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.loa
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.nav
+*.snm
+*.vrb
+*.idx
+*.ilg
+*.ind
+*.xdv
+*.dvi
+
+# ---------------------------------------------------------------
+# Notes:
+#   * Compiled paper PDFs (doc/*.pdf) and generated figures
+#     (doc/figs, doc/dfigs) are intentionally NOT ignored, since
+#     the figure-generation scripts are not stored in the repo.
+#     Uncomment the line below if you prefer to exclude built PDFs.
+# # doc/logistic_benchmark.pdf
+# # doc/logistics_gvns.pdf
+# ---------------------------------------------------------------
