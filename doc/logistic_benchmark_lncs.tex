@@ -43,11 +43,14 @@
 \title{A Benchmark Generator of Realistic Logistic\\ Transport Networks with Nonlinear Edge Costs\\ and Transshipment Capacities}
 \titlerunning{A Benchmark Generator of Realistic Logistic Networks}
 
-\author{Varvara Kovaleva \and Alexander Ponomarenko}
+\author{Varvara Kovaleva\inst{1} \and Alexander Ponomarenko\inst{2}}
 \authorrunning{V.\,Kovaleva and A.\,Ponomarenko}
 
-\institute{HSE University, Laboratory of Algorithms and Technologies for Network
-Analysis, Nizhny Novgorod, Russia\\
+\institute{HSE University, Nizhny Novgorod, Russia\\
+\email{varvara\_kovaleva03@mail.ru}
+\and
+Laboratory of Algorithms and Technologies for Network Analysis, HSE University,
+Nizhny Novgorod, Russia\\
 \email{aponom84@gmail.com}}
 
 \maketitle
@@ -131,9 +134,6 @@ This paper introduces such a generator and corpus. Specifically, we
       discriminates instance difficulty across scales
       (Section~\ref{sec:usecase}).
 \end{itemize}
-The optimisation algorithm we developed for this problem is reported separately;
-here the focus is the data and its fidelity.
-
 % ===============================================================
 \section{Related Work}
 \label{sec:related}
@@ -404,10 +404,13 @@ coordinates, a per-storage table of reload cost and capacity, a city
 position/population table, the demand requests, a precomputed shortest-distance
 matrix, and a parameter file recording the random seed and every generation
 parameter, so that each instance regenerates exactly. The corpus and generator
-are released under permissive licences (data under CC~BY~4.0, code under MIT) and
-archived with a versioned DOI following FAIR principles \cite{fair}; an
-interactive web viewer (Streamlit/Plotly) ships alongside for inspecting
-instances and solver outputs.
+are released under permissive licences (data under CC~BY~4.0, code under MIT)
+following FAIR principles \cite{fair}: the instance corpus is archived on Zenodo
+with a versioned DOI (\url{https://doi.org/10.5281/zenodo.20372456}), and the
+generator source code is openly available on GitHub
+(\url{https://github.com/Varya-K/Optimal-Logistic-Net}); an interactive web
+viewer (Streamlit/Plotly) ships alongside for inspecting instances and solver
+outputs.
 
 \begin{table}[t]
 \centering
@@ -617,9 +620,11 @@ generator and viewer are released together so that solver comparisons on this
 problem can be reproducible and externally valid.
 
 \bigskip
-\noindent\textbf{Data availability.} The generator, the instance corpus and the
-viewer are released openly (data: CC~BY~4.0; code: MIT) and archived with a
-versioned DOI; the development repository is hosted on GitHub.
+\noindent\textbf{Data availability.} The instance corpus is openly available
+under CC~BY~4.0 and archived on Zenodo with a versioned DOI,
+\url{https://doi.org/10.5281/zenodo.20372456}. The generator and the interactive
+viewer are released under the MIT licence in the development repository on
+GitHub, \url{https://github.com/Varya-K/Optimal-Logistic-Net}.
 
 \appendix
 \section{Per-Region Instance Statistics}
