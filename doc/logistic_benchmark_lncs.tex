@@ -51,7 +51,7 @@
 \and
 Laboratory of Algorithms and Technologies for Network Analysis, HSE University,
 Nizhny Novgorod, Russia\\
-\email{aponom84@gmail.com}}
+\email{aponomarenko@hse.ru}}
 
 \maketitle
 
@@ -78,8 +78,8 @@ shows that synthetic and real-geometry instances are structurally consistent
 (two-sample Kolmogorov--Smirnov distances of $0.10$ on degree and edge-length
 distributions, with small and quantified mean deviations), and a baseline-solver
 study demonstrates that the corpus discriminates instance difficulty across
-orders of magnitude. The benchmark is a faithful, reusable testbed for exact and
-heuristic solvers.
+orders of magnitude. The benchmark is a faithful, reusable testbed for the
+development and comparison of exact and heuristic algorithms.
 
 \keywords{Benchmark generation \and Synthetic data \and Spatial networks \and
 Multi-commodity flow \and Gravity model \and Zipf's law \and Reproducibility.}
@@ -101,8 +101,8 @@ capacitated multi-commodity flow problem with a step-wise vehicle cost---it is
 NP-hard, and its difficulty is sensitive to both the topology and the demand
 pattern of the underlying network.
 
-Progress on solvers for such problems is hampered by the absence of suitable
-public benchmarks. Classical multi-commodity flow generators and libraries do
+Progress on solution algorithms---both exact methods and heuristics---for such
+problems is hampered by the absence of suitable public benchmarks. Classical multi-commodity flow generators and libraries do
 not carry node-level transshipment capacities, per-unit reload costs or
 vehicle-induced nonlinear edge costs, and they rarely reflect the geographic
 structure of country-scale distribution networks. Moreover, the true locations
@@ -111,7 +111,7 @@ left to test on either toy graphs or ad-hoc random graphs whose structure
 differs sharply from real transport networks, which undermines the external
 validity of any comparison. A generator that produces \emph{plausible} instances
 at controllable scale, together with a released, citable corpus, is needed to
-make solver comparisons meaningful and reproducible.
+make comparisons of exact and heuristic algorithms meaningful and reproducible.
 
 \paragraph{Contributions.}
 This paper introduces such a generator and corpus. Specifically, we
@@ -616,8 +616,8 @@ files shows that the $35$ synthetic and $15$ real-geometry instances are
 structurally consistent (KS distances $\approx0.1$ with small, quantified mean
 deviations), and a baseline-solver study demonstrates that the corpus
 discriminates instance difficulty across orders of magnitude. The benchmark,
-generator and viewer are released together so that solver comparisons on this
-problem can be reproducible and externally valid.
+generator and viewer are released together so that comparisons of exact and
+heuristic algorithms on this problem can be reproducible and externally valid.
 
 \bigskip
 \noindent\textbf{Data availability.} The instance corpus is openly available
