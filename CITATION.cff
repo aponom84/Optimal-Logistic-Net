@@ -1,0 +1,46 @@
+cff-version: 1.2.0
+message: "If you use this benchmark (data or code), please cite it as below."
+title: "A Benchmark Generator of Realistic Logistic Transport Networks with Nonlinear Edge Costs and Transshipment Capacities"
+abstract: >-
+  An open corpus of 50 benchmark instances for logistic transport network flow
+  problems with nonlinear (vehicle-induced) edge costs and hard storage
+  transshipment capacities. Instances are produced by a parameterised generator
+  calibrated on real road graphs from OpenStreetMap, combining Zipf-distributed
+  city sizes, a spatial-network budget topology model, centrality-driven storage
+  capacities and a doubly constrained gravity demand model, yielding networks
+  whose structural statistics match those of real regional transport systems.
+  The corpus comprises 35 fully synthetic instances (10-150 storages, multiple
+  replicates per size) and 15 real-geometry instances built on regional road
+  graphs (Belgium, California, Denmark, European Russia, Georgia, Germany,
+  Hungary, Illinois, Italy, Netherlands, Ohio, Spain, Sweden, Texas, United
+  Kingdom). Each instance provides node coordinates and population
+  (pos_pop.csv), pairwise edge prices (distance_matrix.csv), transport demands
+  (reqs.csv), storage/transshipment parameters (offices.csv), the network in
+  GraphML (graph.graphml) and the complete generation parameters including the
+  random seed (data.txt), making every instance exactly reproducible. This
+  benchmark corpus was designed and created by Varvara Kovaleva as part of her
+  master's thesis at HSE University (Laboratory of Algorithms and Technologies
+  for Network Analysis, Nizhny Novgorod), under the supervision of Alexander
+  Ponomarenko, who proposed the underlying optimal-logistics problem.
+type: dataset
+authors:
+  - family-names: Kovaleva
+    given-names: Varvara
+    affiliation: "HSE University, Nizhny Novgorod, Russia"
+  - family-names: Ponomarenko
+    given-names: Alexander
+    affiliation: "HSE University, Laboratory of Algorithms and Technologies for Network Analysis, Nizhny Novgorod, Russia"
+keywords:
+  - benchmark generation
+  - synthetic data
+  - spatial networks
+  - multi-commodity flow
+  - gravity model
+  - Zipf's law
+  - logistics
+license: CC-BY-4.0
+repository-code: "https://github.com/Varya-K/Optimal-Logistic-Net"   # original repository (Varvara Kovaleva)
+url: "https://github.com/aponom84/Optimal-Logistic-Net"               # derived version
+date-released: 2026-05-23
+version: "1.0.0"
+# doi: 10.5281/zenodo.20372456   # fill in after depositing on Zenodo
