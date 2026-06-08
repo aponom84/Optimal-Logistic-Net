@@ -176,6 +176,20 @@ are realistic in topology, capacity and demand simultaneously. Finally, we
 follow FAIR data principles \cite{fair} in releasing a versioned, citable
 corpus.
 
+\paragraph{Heuristics for related logistic optimisation problems.}
+Closely related computational work has addressed vehicle-level logistic routing
+rather than upper-level flow planning. Batsyn and Ponomarenko proposed a
+multi-start greedy heuristic for a real-life truck and trailer routing problem
+arising in retail distribution \cite{batsyn2014ttrp}, and extended the approach
+to a site-dependent variant with soft and hard time windows and split deliveries
+\cite{batsyn2015heuristic}. Such methods route vehicles once the demand at each
+storage is fixed; the problem targeted by the present benchmark---multi-commodity
+transport between storages with nonlinear edge costs and transshipment
+capacities---sits one level higher in the planning hierarchy and determines
+those demands. The two problem classes are complementary, and we expect the
+corpus released here to support analogous heuristic development at the
+network-flow level.
+
 % ===============================================================
 \section{The Optimisation Problem an Instance Must Support}
 \label{sec:problem}
@@ -696,6 +710,14 @@ method. Mathematical Programming Computation \textbf{10}(1), 119--142 (2018)
 \bibitem{fair} Wilkinson, M.D., et al.: The FAIR guiding principles for
 scientific data management and stewardship. Scientific Data \textbf{3}, 160018
 (2016)
+\bibitem{batsyn2014ttrp} Batsyn, M., Ponomarenko, A.: Heuristic for a real-life
+truck and trailer routing problem. Procedia Computer Science \textbf{31},
+778--792 (2014)
+\bibitem{batsyn2015heuristic} Batsyn, M., Ponomarenko, A.: Heuristic for
+site-dependent truck and trailer routing problem with soft and hard time windows
+and split deliveries. In: Pardalos, P., Pavone, M., Farinella, G.M., Cutello, V.
+(eds.) Machine Learning, Optimization, and Big Data (MOD 2015). LNCS, vol.~9432,
+pp.~65--79. Springer, Cham (2015)
 \end{thebibliography}
 
 \end{document}
