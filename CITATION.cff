@@ -43,4 +43,4 @@ repository-code: "https://github.com/Varya-K/Optimal-Logistic-Net"   # original 
 url: "https://github.com/aponom84/Optimal-Logistic-Net"               # derived version
 date-released: 2026-05-23
 version: "1.0.0"
-# doi: 10.5281/zenodo.20372456   # fill in after depositing on Zenodo
+doi: 10.5281/zenodo.20372456
