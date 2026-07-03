@@ -1,0 +1,13 @@
+{
+  "instance": "Sweden",
+  "group": "real",
+  "size": 45,
+  "seed": 3,
+  "result_price": 5321296.845889409,
+  "init_price": 10691648.241000006,
+  "solving_time": 3538.719340801239,
+  "time_limit": 5400.0,
+  "ok": true,
+  "wall_time": 3538.81,
+  "finished_at": "2026-07-01T19:51:55"
+}

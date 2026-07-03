@@ -1,0 +1,13 @@
+{
+  "instance": "Denmark",
+  "group": "real",
+  "size": 11,
+  "seed": 2,
+  "result_price": 259359.08266999992,
+  "init_price": 332714.073,
+  "solving_time": 636.0369079113007,
+  "time_limit": 1320.0,
+  "ok": true,
+  "wall_time": 636.05,
+  "finished_at": "2026-07-01T15:53:24"
+}

@@ -1,0 +1,13 @@
+{
+  "instance": "Ohio_USA",
+  "group": "real",
+  "size": 22,
+  "seed": 3,
+  "result_price": 495685.5657700002,
+  "init_price": 798854.1789999995,
+  "solving_time": 1520.0117785930634,
+  "time_limit": 2640.0,
+  "ok": true,
+  "wall_time": 1520.04,
+  "finished_at": "2026-07-01T17:18:57"
+}

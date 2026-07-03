@@ -1,0 +1,12 @@
+{
+  "instance": "100_nodes_1",
+  "group": "synthetic",
+  "size": 100,
+  "backend": "highs",
+  "ok": false,
+  "error": "MemoryError('SCIP: insufficient memory error!')",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/aponomarenko/Optimal-Logistic-Net/cluster/run_one.py\", line 47, in main\n    r = exact_solver.solve_instance(\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/aponomarenko/Optimal-Logistic-Net/exact_solver.py\", line 224, in solve_instance\n    return solve_arc(net, backend=backend, time_limit=time_limit, gap=gap,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/aponomarenko/Optimal-Logistic-Net/exact_solver.py\", line 208, in solve_arc\n    r = _solve_highs(net, time_limit, gap, threads, keep_solution)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/aponomarenko/Optimal-Logistic-Net/exact_solver.py\", line 169, in _solve_highs\n    m.writeProblem(mps)  # SCIP MPS writer emits explicit bounds\n    ^^^^^^^^^^^^^^^^^^^\n  File \"src/pyscipopt/scip.pxi\", line 4350, in pyscipopt.scip.Model.writeProblem\n  File \"src/pyscipopt/scip.pxi\", line 326, in pyscipopt.scip.PY_SCIP_CALL\nMemoryError: SCIP: insufficient memory error!\n",
+  "time_limit": 10800.0,
+  "wall_time": 2183.66,
+  "finished_at": "2026-07-02T07:39:19"
+}

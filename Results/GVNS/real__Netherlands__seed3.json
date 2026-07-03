@@ -1,0 +1,13 @@
+{
+  "instance": "Netherlands",
+  "group": "real",
+  "size": 18,
+  "seed": 3,
+  "result_price": 200086.81722499992,
+  "init_price": 332645.368,
+  "solving_time": 2177.0379853248596,
+  "time_limit": 2160.0,
+  "ok": true,
+  "wall_time": 2177.06,
+  "finished_at": "2026-07-01T16:25:36"
+}

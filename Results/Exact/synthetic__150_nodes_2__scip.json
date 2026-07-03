@@ -1,0 +1,12 @@
+{
+  "instance": "150_nodes_2",
+  "group": "synthetic",
+  "size": 150,
+  "backend": "scip",
+  "ok": false,
+  "error": "MemoryError('SCIP: insufficient memory error!')",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/aponomarenko/Optimal-Logistic-Net/cluster/run_one.py\", line 47, in main\n    r = exact_solver.solve_instance(\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/aponomarenko/Optimal-Logistic-Net/exact_solver.py\", line 224, in solve_instance\n    return solve_arc(net, backend=backend, time_limit=time_limit, gap=gap,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/aponomarenko/Optimal-Logistic-Net/exact_solver.py\", line 206, in solve_arc\n    r = _solve_scip(net, time_limit, gap, threads, keep_solution)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/aponomarenko/Optimal-Logistic-Net/exact_solver.py\", line 140, in _solve_scip\n    m, veh = build_scip_model(net)\n             ^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/aponomarenko/Optimal-Logistic-Net/exact_solver.py\", line 83, in build_scip_model\n    flow[(edge, pid)] = m.addVar(\n                        ^^^^^^^^^\n  File \"src/pyscipopt/scip.pxi\", line 4425, in pyscipopt.scip.Model.addVar\n  File \"src/pyscipopt/scip.pxi\", line 326, in pyscipopt.scip.PY_SCIP_CALL\nMemoryError: SCIP: insufficient memory error!\n",
+  "time_limit": 14400.0,
+  "wall_time": 851.4,
+  "finished_at": "2026-07-02T00:10:44"
+}

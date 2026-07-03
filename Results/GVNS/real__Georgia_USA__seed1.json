@@ -1,0 +1,13 @@
+{
+  "instance": "Georgia_USA",
+  "group": "real",
+  "size": 24,
+  "seed": 1,
+  "result_price": 783652.0817015303,
+  "init_price": 1144278.6260000006,
+  "solving_time": 1672.3356609344482,
+  "time_limit": 2880.0,
+  "ok": true,
+  "wall_time": 1672.43,
+  "finished_at": "2026-07-01T17:22:00"
+}

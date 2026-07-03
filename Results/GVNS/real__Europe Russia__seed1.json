@@ -1,0 +1,13 @@
+{
+  "instance": "Europe Russia",
+  "group": "real",
+  "size": 90,
+  "seed": 1,
+  "result_price": 21987693.29185291,
+  "init_price": 66338414.95899985,
+  "solving_time": 4583.678562402725,
+  "time_limit": 10800.0,
+  "ok": true,
+  "wall_time": 4584.07,
+  "finished_at": "2026-07-01T22:29:54"
+}

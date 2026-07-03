@@ -1,0 +1,13 @@
+{
+  "instance": "Italy",
+  "group": "real",
+  "size": 46,
+  "seed": 3,
+  "result_price": 3158063.6327996925,
+  "init_price": 6669578.367999993,
+  "solving_time": 2541.925715446472,
+  "time_limit": 5520.0,
+  "ok": true,
+  "wall_time": 2542.02,
+  "finished_at": "2026-07-01T19:44:21"
+}

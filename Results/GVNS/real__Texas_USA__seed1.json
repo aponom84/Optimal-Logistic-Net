@@ -1,0 +1,13 @@
+{
+  "instance": "Texas_USA",
+  "group": "real",
+  "size": 58,
+  "seed": 1,
+  "result_price": 5966352.075484189,
+  "init_price": 11956660.147000015,
+  "solving_time": 4408.436856985092,
+  "time_limit": 6960.0,
+  "ok": true,
+  "wall_time": 4408.69,
+  "finished_at": "2026-07-01T21:40:36"
+}

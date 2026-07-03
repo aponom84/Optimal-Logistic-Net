@@ -1,0 +1,13 @@
+{
+  "instance": "30_nodes_4",
+  "group": "synthetic",
+  "size": 30,
+  "seed": 3,
+  "result_price": 1665646.9650949996,
+  "init_price": 3383696.575000003,
+  "solving_time": 2336.1346945762634,
+  "time_limit": 3600.0,
+  "ok": true,
+  "wall_time": 2336.18,
+  "finished_at": "2026-07-01T18:21:22"
+}

@@ -1,0 +1,13 @@
+{
+  "instance": "California_USA",
+  "group": "real",
+  "size": 39,
+  "seed": 3,
+  "result_price": 3672240.1950152423,
+  "init_price": 6396638.617000005,
+  "solving_time": 2309.8391423225403,
+  "time_limit": 4680.0,
+  "ok": true,
+  "wall_time": 2309.91,
+  "finished_at": "2026-07-01T19:02:45"
+}

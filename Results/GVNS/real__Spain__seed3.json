@@ -1,0 +1,13 @@
+{
+  "instance": "Spain",
+  "group": "real",
+  "size": 59,
+  "seed": 3,
+  "result_price": 4423224.244388162,
+  "init_price": 9911575.026999997,
+  "solving_time": 3579.7795338630676,
+  "time_limit": 7080.0,
+  "ok": true,
+  "wall_time": 3579.93,
+  "finished_at": "2026-07-01T21:59:04"
+}

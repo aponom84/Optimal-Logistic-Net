@@ -1,0 +1,4 @@
+result price = 4583231.15225713 
+optimal result price = 6307904.850248558 
+init price = 9911575.026999997 
+solving time = 4086.8608441352844 

@@ -1,0 +1,13 @@
+{
+  "instance": "Illinois_USA",
+  "group": "real",
+  "size": 28,
+  "seed": 1,
+  "result_price": 668966.3003450001,
+  "init_price": 1392708.9630000005,
+  "solving_time": 3427.6575853824615,
+  "time_limit": 3360.0,
+  "ok": true,
+  "wall_time": 3427.76,
+  "finished_at": "2026-07-01T18:03:24"
+}
