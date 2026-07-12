@@ -28,21 +28,13 @@
 
 \newtheorem{definition}{Definition}
 
-% Lightweight algorithm float + pseudocode (no external algo packages needed)
-\newfloat{algorithm}{t}{loa}
-\floatname{algorithm}{Algorithm}
-\newcounter{algln}
-\newenvironment{pcode}{%
-  \setcounter{algln}{0}%
-  \par\vspace{2pt}\hrule\vspace{3pt}%
-  \begin{list}{\footnotesize\ttfamily\refstepcounter{algln}\thealgln:}%
-    {\setlength{\leftmargin}{2.4em}\setlength{\itemsep}{0pt}%
-     \setlength{\parsep}{0pt}\setlength{\topsep}{0pt}}%
-}{%
-  \end{list}\vspace{2pt}\hrule\vspace{2pt}%
-}
-\newcommand{\KW}[1]{\textbf{#1}}
-\newcommand{\IND}{\hspace*{1.4em}}
+% Formal algorithm typesetting
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\SetKwProg{Fn}{Function}{:}{}
+\SetKwFunction{PN}{ProcessNeighborhood}
+\SetKwFunction{GenPaths}{GenPaths}
+\SetKwFunction{SolveMILP}{SolveMILP}
+\SetKwFunction{RoundedLP}{RoundedLP}
 
 % Convenient operators
 \DeclareMathOperator*{\argmin}{arg\,min}
@@ -78,12 +70,12 @@ solver based on General Variable Neighborhood Search (GVNS). The method works
 in the path space and relies on three problem-specific neighborhoods that
 generate new candidate paths by (i)~shortest paths under a reload-aware
 metric, (ii)~edges carrying partially loaded vehicles, and (iii)~detours
-around congested storages. Because no public benchmark exists for this
-problem, we also design a generator of realistic logistic networks calibrated
-on real road graphs of nine European countries, five U.S.\ states and the
-European part of Russia, reproducing their near-planar topology
+around congested storages. We evaluate the method on our open
+benchmark~\cite{benchmark} for this problem: a corpus of realistic logistic
+networks calibrated on real road graphs of nine European countries, five U.S.\
+states and the European part of Russia, with near-planar topology
 (Zipf city sizes, a spatial-network budget model, and a doubly constrained
-gravity demand model). On 34 synthetic and 15 real-geometry instances with up
+gravity demand model). On 35 synthetic and 15 real-geometry instances with up
 to 150 storages, GVNS returns solutions provably within about one percent of the
 optimum on small networks---certified by a branch-and-bound dual bound
 substantially tighter than the LP relaxation---is stable across random seeds,
@@ -135,17 +127,16 @@ edge costs and limited storage capacities. Specifically, we
       equipped with three problem-specific neighborhoods that exploit reload
       costs, partial vehicle loads and storage congestion
       (Section~\ref{sec:gvns});
-\item build a generator of plausible logistic networks calibrated on real road
-      graphs, since no public benchmark exists for this problem
-      (Section~\ref{sec:data});
-\item report a computational study on synthetic and real-geometry instances
-      with up to 150 storages, comparing GVNS against the LP relaxation, its
-      rounded version, and a time-limited exact solver
+\item report a computational study on our open benchmark~\cite{benchmark}
+      (Section~\ref{sec:data}), comparing GVNS
+      against the LP relaxation, its rounded version, and certified MIP dual
+      bounds and incumbents from an exact solver
       (Section~\ref{sec:experiments}).
 \end{enumerate}
-The scientific novelty lies in the design of the specialised GVNS
-neighborhoods adapted to the path-based formulation and its constraints, and
-in the integrated approach to generating realistic logistic networks.
+The scientific novelty lies in the design of the specialised GVNS neighborhoods
+adapted to the path-based formulation and its constraints, and in the
+exact-solver optimality-gap study that certifies the quality of the resulting
+solutions.
 
 \section{Problem statement and model}
 \label{sec:model}
@@ -273,55 +264,18 @@ travel cost and few transit nodes.
 
 \subsection{General Variable Neighborhood Search}
 VNS~\cite{hansen2019,hansen2017} is a metaheuristic whose core idea is the
-systematic change of neighborhood structures while exploring the solution
-space. Given a problem $\min\{f(x):x\in X\}$ and a family of neighborhoods
-$N_k(x),\ k=1,\dots,k_{\max}$, the classical scheme alternates three steps:
-\emph{shake} (a random move in $N_k$ to escape local optima), \emph{local
-search}, and \emph{neighborhood change} (Algorithm~\ref{alg:nc}). When the
-local search itself is a Variable Neighborhood Descent
-(VND, Algorithm~\ref{alg:vnd})---a deterministic sweep through neighborhoods
-ordered from intensification to diversification---the overall method is called
-General VNS (GVNS, Algorithm~\ref{alg:gvns}), a flexible tool that often
-outperforms single-neighborhood heuristics~\cite{karakostas2019,mjirda2014}.
-
-\begin{algorithm}[t]
-\caption{NeighborhoodChange$(x,x',k)$}
-\label{alg:nc}
-\begin{pcode}
-\item \KW{if} $f(x')<f(x)$ \KW{then}
-\item \IND $x\gets x'$;\ \ $k\gets 1$ \hfill\textit{// accept move, restart}
-\item \KW{else}
-\item \IND $k\gets k+1$ \hfill\textit{// next neighborhood}
-\item \KW{return} $x,k$
-\end{pcode}
-\end{algorithm}
-
-\begin{algorithm}[t]
-\caption{VND$(x,k_{\max})$}
-\label{alg:vnd}
-\begin{pcode}
-\item $k\gets 1$
-\item \KW{while} $k\le k_{\max}$ \KW{do}
-\item \IND $x'\gets \argmin_{y\in N_k(x)} f(y)$
-\item \IND $x,k\gets$ NeighborhoodChange$(x,x',k)$
-\item \KW{return} $x$
-\end{pcode}
-\end{algorithm}
-
-\begin{algorithm}[t]
-\caption{GVNS$(x,k_{\max},l_{\max},t_{\max})$}
-\label{alg:gvns}
-\begin{pcode}
-\item $k\gets 1$
-\item \KW{repeat}
-\item \IND $x'\gets$ Shake$(x,k)$ \hfill\textit{// random solution from $N_k(x)$}
-\item \IND $x''\gets$ VND$(x',l_{\max})$ \hfill\textit{// local search}
-\item \IND $x,k\gets$ NeighborhoodChange$(x,x'',k)$
-\item \IND $t\gets$ CpuTime$()$
-\item \KW{until} $t>t_{\max}$ \KW{or} $k>k_{\max}$
-\item \KW{return} $x$
-\end{pcode}
-\end{algorithm}
+systematic change of neighborhood structures while exploring the solution space.
+Given a problem $\min\{f(x):x\in X\}$ and a family of neighborhoods
+$N_k(x),\ k=1,\dots,k_{\max}$, the classical scheme alternates three steps: a
+\emph{shake} (a random move in $N_k$ to escape local optima), a \emph{local
+search}, and a \emph{neighborhood change} (on improvement, accept the move and
+reset $k\!\gets\!1$; otherwise advance to $k\!+\!1$). When the local search is
+itself a Variable Neighborhood Descent (VND)---a deterministic sweep through the
+neighborhoods ordered from intensification to diversification---the method is
+called General VNS (GVNS), which often outperforms single-neighborhood
+heuristics~\cite{karakostas2019,mjirda2014}. Our instantiation searches the space
+of commodity paths; its concrete form is Algorithm~\ref{alg:gvns}, built on the
+neighborhood-processing primitive of Algorithm~\ref{alg:pn}.
 
 \subsection{Preprocessing and initial solution}
 Transport networks are typically sparse directed graphs in which not every
@@ -417,43 +371,87 @@ configuration; in Shake the range widens to $|\Vv|/4$--$|\Vv|/3$, the threshold
 drops to $0.5$ and three paths are generated per configuration.
 
 \subsection{Overall algorithm}
-The method follows the GVNS template of Algorithm~\ref{alg:gvns}, sweeping the
-neighborhoods in the order N1, N2, N3. The MILP solver used to redistribute
-flow over the enlarged path set is given a shorter time budget inside VND than
-inside Shake, because VND explores a smaller region. After redistribution some
-paths may carry zero flow; to keep the model from growing without bound, the
-path set is periodically pruned of zero-flow paths---after every Shake, and
-after the second and third neighborhoods of VND whenever the objective
-improves. A global time limit governs the whole run, and the search stops early
-if a full neighborhood sweep brings no improvement.
+The method is given by Algorithms~\ref{alg:pn} and~\ref{alg:gvns}.
+Algorithm~\ref{alg:pn} is the primitive shared by the three neighborhoods: it
+generates a set of candidate paths---the only step that differs between $N_1$,
+$N_2$ and $N_3$, via \GenPaths---enlarges the path pool, re-optimises the
+commodity flows with the path-based MILP of Section~\ref{sec:model}, warm-started
+from the current solution, and, \emph{only} if the objective improves, commits
+the new paths that carry flow while pruning those that do not, which keeps the
+model bounded. Algorithm~\ref{alg:gvns} embeds this primitive in the GVNS
+template: starting from the rounded-LP solution of Eq.~\eqref{eq:init}, each round
+shakes with the current neighborhood---diversified parameters and a larger MILP
+budget $\tau_{\mathrm{shk}}$---and then runs the VND sweep
+$N_1\!\to\!N_2\!\to\!N_3$ with a smaller budget $\tau_{\mathrm{vnd}}$, since VND
+explores a narrower region. The neighborhood index resets on improvement and
+advances otherwise; a global limit $t_{\max}$ bounds the run, and the search
+stops once a full sweep brings no improvement.
 
-\section{Generation of realistic logistic networks}
+\begin{algorithm}[t]
+\DontPrintSemicolon
+\Fn{\PN{$P,\ x,\ z,\ N,\ \mathit{div},\ \tau$}}{
+  \tcp{incumbent path pool $P$, flows $x$, objective $z=f(x)$; updated in place}
+  $Q \gets \bigcup_{k \in K}{}$ \GenPaths{$N,\ k,\ \mathit{div}$}\tcp*{candidate paths; $N$ selects the rule}
+  \lIf{$Q = \emptyset$}{\Return \textbf{false}}
+  $(x',\ z') \gets{}$ \SolveMILP{$P \cup Q,\ x,\ \tau$}\tcp*{redistribute flow; warm start $x$, limit $\tau$}
+  \eIf{$z' < z$}{
+    $P \gets P \cup \{\, p \in Q : x'_p > 0 \,\}$;\ \ $x \gets x'$;\ \ $z \gets z'$\;
+    prune from $P$ every path carrying zero flow\tcp*{keep the model bounded}
+    \Return \textbf{true}
+  }{
+    discard $Q$\;
+    \Return \textbf{false}
+  }
+}
+\caption{\texttt{ProcessNeighborhood}: enlarge the path pool, re-optimise the
+flows by MILP, and keep the move iff it improves the objective.}
+\label{alg:pn}
+\end{algorithm}
+
+\begin{algorithm}[t]
+\DontPrintSemicolon
+\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+\Input{graph $G=(\Vv,\E)$, commodities $K$, vehicle capacity $C$, time limit $t_{\max}$}
+\Output{path pool $P$ with commodity flows $x$}
+build the reload-aware complete graph $G'$; precompute a shortest-path pool per commodity\;
+$P \gets \{\,(s_k,t_k) : k \in K\,\}$;\ \ $(x,z) \gets{}$ \RoundedLP{$P$}\tcp*{initial solution, Eq.~\eqref{eq:init}}
+$k \gets 1$\;
+\While{$k \le 3$ \textbf{\emph{and}} $\mathrm{CpuTime} < t_{\max}$}{
+  \PN{$P,\ x,\ z,\ N_k,\ \textbf{true},\ \tau_{\mathrm{shk}}$}\tcp*{shake: diversified, larger budget}
+  $z_0 \gets z$\;
+  \Repeat{$\neg\,\mathit{imp}$ \textbf{\emph{or}} $\mathrm{CpuTime} \ge t_{\max}$}{
+    $\mathit{imp} \gets{}$ \PN{$P,\ x,\ z,\ N_1,\ \textbf{false},\ \tau_{\mathrm{vnd}}$}\;
+    \lIf{$\neg\,\mathit{imp}$}{$\mathit{imp} \gets{}$ \PN{$P,\ x,\ z,\ N_2,\ \textbf{false},\ \tau_{\mathrm{vnd}}$}}
+    \lIf{$\neg\,\mathit{imp}$}{$\mathit{imp} \gets{}$ \PN{$P,\ x,\ z,\ N_3,\ \textbf{false},\ \tau_{\mathrm{vnd}}$}}
+  }
+  \leIf{$z < z_0$}{$k \gets 1$}{$k \gets k+1$}\tcp*{neighborhood change}
+}
+\Return $(P,\ x)$
+\caption{\texttt{GVNS} for logistic network flow design.}
+\label{alg:gvns}
+\end{algorithm}
+
+\section{Benchmark instances}
 \label{sec:data}
 
-Because no public benchmark with known optima exists for this specific
-problem, and because computing exact optima is prohibitively expensive, we
-generate a corpus of synthetic networks and transportation requests that
-imitate real logistic networks. We target upper-level networks---the road
-graphs connecting regional sorting centres across a country or a large part of
-it.
+We evaluate GVNS on our open benchmark~\cite{benchmark} for this problem, a
+corpus of realistic logistic transport networks published as a dataset on
+Zenodo~\cite{benchmark-data} (CC-BY-4.0). We summarise the properties relevant to
+our study and refer the reader to~\cite{benchmark} for the full construction. The
+corpus targets upper-level networks---the road graphs connecting regional sorting
+centres across a country or a large region---and its generator is calibrated on
+OpenStreetMap~\cite{osm} data for nine European countries, five large U.S.\
+states and the European part of Russia.
 
-\subsection{Calibration on real networks}
-Since the locations of real distribution centres are not public, we calibrate
-the generator on city locations, populations and highways from
-OpenStreetMap~\cite{osm}, for nine European countries of varying size and
-structure, five large U.S.\ states and the European part of Russia. From the
-raw highway graph and city list we aggregate nearby road endpoints into nodes,
-filter cities greedily by descending population subject to a minimum spacing,
-attach each retained city to a nearby high-degree road node (centres are
-cheaper to place at highway junctions), and finally simplify the graph by
-joining the chosen centres with edges equal to the shortest stop-free paths;
-edges are modelled as straight segments of Euclidean length.
-
-Analysis of these graphs reveals three robust properties that the generator
-must reproduce: the edge-length distribution is dominated by short edges; graph
-diameters are large (Table~\ref{tab:diam}); and the mean vertex degree is low
-(about $3.575$ on average, below the planar bound of $6$). The networks are
-thus near-planar with large diameters---the opposite of small-world graphs.
+The generator reproduces the structural statistics of real regional transport
+systems: Zipf-distributed city sizes~\cite{gabaix1999}, a spatial-network budget
+topology in the spirit of Gastner and Newman~\cite{gastner2006}, transshipment
+capacities driven by population and betweenness
+centrality~\cite{barthelemy2011,kirkley2018}, and a doubly constrained gravity
+demand model~\cite{wilson1967}. The resulting graphs are \emph{near-planar with
+large diameters}: the edge-length distribution is dominated by short edges, the
+mean vertex degree is low (about $3.575$, below the planar bound of $6$), and
+diameters are large (Table~\ref{tab:diam})---the opposite of small-world graphs.
 
 \begin{table}[t]
 \centering
@@ -473,57 +471,12 @@ Europe Russia & 16 & 90 & Texas & 10 & 58\\
 \end{tabular}
 \end{table}
 
-\subsection{Generation algorithm}
-Given a desired number of storages $k$, the generator proceeds in five stages.
-
-\textbf{(1) Cities and populations.} A pool of cities (several times larger
-than $k$) is created with sizes following Zipf's law~\cite{gabaix1999},
-$size_i=P/\,rank_i^{\alpha}$, plus small noise; empirically the exponent lies
-near $\alpha\approx0.974$ for the calibration regions, so $\alpha$ is drawn
-from $\mathcal{N}(0.974,0.06)$.
-
-\textbf{(2) City layout.} Using \texttt{make\_blobs}, $k$ clusters are placed
-on a square map (standard deviation about $1/15$ of the map size), the largest
-cities seeded one per cluster; nearby cities are then aggregated into storages
-exactly as in the calibration step, and each storage is assigned the summed
-population of its nearest cities.
-
-\textbf{(3) Topology.} Following the spatial-network model of Gastner and
-Newman~\cite{gastner2006}, edges are chosen to trade off construction cost
-$\sum_{(i,j)} d_{ij}$ against an ``effective distance''
-$L_{ij}=\lambda\,d_{ij}+(1-\lambda)\cdot 1$, where $\lambda\in[0,1]$ interpolates
-between measuring routes in kilometres ($\lambda=1$) and in hop count
-($\lambda=0$). Starting from a minimum spanning tree, edges are added within a
-budget (a multiple of the MST cost) so as to minimise mean pairwise distance.
-Matching the diameter, mean edge length and mean degree of the calibration
-graphs gives $\lambda\sim\mathcal{N}(0.263,0.15)$ and a budget coefficient
-$\sim\mathcal{N}(2.56,0.6)$. Each edge is duplicated in the reverse direction
-with length differing by at most one percent, and the per-vehicle cost is set
-to $c_e=cost_{km}\cdot dist_e$ with $cost_{km}=5$.
-
-\textbf{(4) Storage capacities and reload costs.} The transshipment capacity
-combines population (served demand) and betweenness centrality (a proxy for
-through-flow~\cite{barthelemy2011,kirkley2018}),
-$\,maxoverload_i=l\cdot population_i^{\gamma}(1+\alpha\,\tilde b_i)$, with
-$l=1,\gamma=0.5,\alpha=1.2$ and a floor $mincapacity=100$; reload costs are
-inversely proportional to capacity, $cost_i=k/\,maxoverload_i^{\delta}$ with
-$k=500,\delta=1$, reflecting economies of scale.
-
-\textbf{(5) Demand.} The origin--destination matrix is built with a doubly
-constrained gravity model~\cite{wilson1967},
-$T_{ij}=A_iO_iB_jD_j\,f(dist_{ij})$ with deterrence $f(dist)=dist^{-\beta}$,
-$\beta=1$; the marginals $O_i,D_j$ are proportional to served population, the
-balancing factors $A_i,B_j$ are found by iterative fitting, and total flow is
-scaled to a few times the total storage capacity. Finally $25\%$ of requests
-are dropped with probability proportional to their volume, so that not every
-pair exchanges goods.
-
 \subsection{Test set}
-Real calibration networks span $11$ to $90$ storages. For the fully synthetic
-study we generated $10$ instances with $10$ storages, $7$ each with $20$ and
-$30$, $5$ with $50$, $3$ with $100$ and $1$ with $150$. In addition, the $15$
-real-geometry regions were equipped with generated edge costs, storage
-capacities/reload costs and demand requests.
+The corpus comprises $35$ fully synthetic instances---$10$ with $10$ storages,
+$7$ each with $20$ and $30$, $5$ with $50$, and $3$ each with $100$ and
+$150$---together with $15$ real-geometry instances built on the calibration road
+graphs ($11$ to $90$ storages). We use all $50$ instances; each is exactly
+reproducible from the published random seed and parameters~\cite{benchmark-data}.
 
 \section{Computational experiments}
 \label{sec:experiments}
@@ -775,6 +728,12 @@ models. \textit{Transportation Research}, 1(3):253--269, 1967.
 method. \textit{Mathematical Programming Computation}, 10(1):119--142, 2018.
 \bibitem{scip} S.~Bolusani, M.~Besan\c{c}on, K.~Bestuzheva, et al. The SCIP
 Optimization Suite 9.0. Technical Report, Optimization Online, 2024.
+\bibitem{benchmark} V.~Kovaleva, A.~Ponomarenko. A Benchmark Generator of
+Realistic Logistic Transport Networks with Nonlinear Edge Costs and
+Transshipment Capacities. \textit{arXiv preprint} arXiv:2606.20653, 2026.
+\bibitem{benchmark-data} V.~Kovaleva, A.~Ponomarenko. A Benchmark of Realistic
+Logistic Transport Networks with Nonlinear Edge Costs and Transshipment
+Capacities (dataset). Zenodo, 2026. \url{https://doi.org/10.5281/zenodo.20372456}
 \end{thebibliography}
 
 \end{document}
