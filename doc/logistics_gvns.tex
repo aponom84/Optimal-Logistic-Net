@@ -493,8 +493,8 @@ random seeds and we report the best objective together with its across-seed
 mean and standard deviation. Unless stated otherwise the exact solves were run
 to a target MIP gap of zero (i.e.\ asking for a certificate of optimality) under
 a size-dependent wall-clock budget (30~min for $|V|=10$, growing to 4~h for
-$|V|=150$); GVNS keeps the budget of the original study (twice the number of
-storages, in minutes).
+$|V|=150$); GVNS is run with a time limit of twice the number of storages, in
+minutes.
 
 Lacking known optima, we compare GVNS against four references:
 \begin{itemize}[leftmargin=1.4em,itemsep=1pt,topsep=2pt]
@@ -525,8 +525,8 @@ bound},
   \qquad
   \underline{z}=\text{best MIP dual bound},
 \]
-which upper-bounds the true optimality gap of GVNS. We additionally report, as
-in the original study, the ratio of each reference objective to that of GVNS
+which upper-bounds the true optimality gap of GVNS. We additionally report the
+ratio of each reference objective to that of GVNS
 ($Ratio_{\text{method}}=Result_{\text{method}}/Result_{\text{GVNS}}$), so values
 below~$1$ are better than GVNS and above~$1$ are worse.
 
@@ -680,7 +680,7 @@ benchmarks, we built a generator of realistic logistic networks calibrated on
 real road graphs and reproducing their near-planar topology, Zipf city sizes
 and gravity-model demand.
 
-On $34$ synthetic and $15$ real-geometry instances of up to $150$ storages,
+On $35$ synthetic and $15$ real-geometry instances of up to $150$ storages,
 GVNS produced solutions provably within about one percent of the optimum on
 small networks (certified by a MIP dual bound far tighter than the LP
 relaxation) and, for a comparable budget, up to $55\%$ cheaper than a
