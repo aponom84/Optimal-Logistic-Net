@@ -506,10 +506,13 @@ Lacking known optima, we compare GVNS against four references:
 \item \textbf{Rounded LP} -- the relaxed solution with $y_e$ rounded up; this is
       the GVNS starting solution and a valid \emph{upper bound};
 \item \textbf{MIP dual bound} -- the best lower bound proved by the exact
-      branch-and-bound solver within its budget. This is the key reference: it
-      is a \emph{valid lower bound} that is typically far tighter than the LP
-      relaxation, and it lets us bound the true optimum even when optimality is
-      not proved;
+      branch-and-bound solver within its budget, i.e.\ the global lower bound of
+      the search tree: the LP relaxation strengthened by branching and cutting
+      planes, which rises towards the optimum as the tree is explored. It is thus
+      a \emph{valid} lower bound ($\underline{z}\le z^{\ast}$) that---unlike the
+      root LP relaxation, which ignores vehicle integrality---is typically tight
+      (within a few percent of the optimum); it is the key reference, letting us
+      bound the true optimum even when optimality is not proved;
 \item \textbf{MIP incumbent} -- the best feasible solution the exact solver
       returns within a budget comparable to the GVNS run time.
 \end{itemize}
