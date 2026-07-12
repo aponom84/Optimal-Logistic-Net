@@ -136,10 +136,12 @@ def main():
         # every size; fall back to the LP job's rounded value if init is missing
         row["ratio_rounded"] = ratio(gvns_init if gvns_init is not None else rounded)
         row["ratio_milp"] = ratio(best_primal)
-        # headline: GVNS optimality gap vs best valid lower bound (dual bound)
-        lb = best_dual if best_dual is not None else lp_relax
-        row["gvns_gap_to_LB"] = ((gvns_best - lb) / lb) if (gvns_best and lb) else None
-        row["lb_source"] = "dual" if best_dual is not None else ("lp" if lp_relax else "")
+        # headline: GVNS gap to the *tight* MIP dual bound only (the LP relaxation
+        # is a far looser bound and would inflate this misleadingly; it is still
+        # reported via ratio_lp_relax at every size).
+        row["gvns_gap_to_LB"] = ((gvns_best - best_dual) / best_dual) \
+            if (gvns_best and best_dual is not None) else None
+        row["lb_source"] = "dual" if best_dual is not None else ""
         per.append(row)
 
     fields = ["group", "size", "name", "n_seeds", "gvns_best", "gvns_mean", "gvns_std",
