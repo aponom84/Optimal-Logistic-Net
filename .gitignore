@@ -8,6 +8,9 @@ access/
 ._*
 Thumbs.db
 desktop.ini
+doc/logistics_gvns.pdf
+doc/logistic_benchmark_lncs.pdf
+doc/logistic_benchmark.pdf
 
 # --- Editors / tooling ---
 .claude/
