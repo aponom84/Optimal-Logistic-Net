@@ -1,4 +1,4 @@
-\documentclass[11pt]{article}
+\documentclass[runningheads]{llncs}
 
 % ---------------------------------------------------------------
 % A General Variable Neighborhood Search for a logistic transport
@@ -9,8 +9,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
-\usepackage[margin=1in]{geometry}
-\usepackage{amsmath,amssymb,amsthm}
+\usepackage{amsmath,amssymb}
 \usepackage{mathtools}
 \usepackage{graphicx}
 \usepackage{booktabs}
@@ -25,8 +24,6 @@
 
 \captionsetup{font=small,labelfont=bf}
 \setlength{\parskip}{2pt}
-
-\newtheorem{definition}{Definition}
 
 % Formal algorithm typesetting
 \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
@@ -43,20 +40,26 @@
 \newcommand{\Real}{\mathbb{R}}
 \newcommand{\Int}{\mathbb{Z}}
 
-\title{\textbf{A General Variable Neighborhood Search for Logistic Network
-Flow Design with Nonlinear Edge Costs and Transshipment Capacities}}
-
-% \author{V.~A.~Kovaleva \and A.~A.~Ponomarenko\\[2pt]
-% \small HSE University,\\
-% \small Faculty of Informatics, Mathematics and Computer Science, Nizhny Novgorod, Russia}
-
-\date{}
-
 \begin{document}
+
+\title{A General Variable Neighborhood Search for Logistic Network
+Flow Design with Nonlinear Edge Costs and Transshipment Capacities}
+\titlerunning{GVNS for Logistic Network Flow Design with Nonlinear Costs and Capacities}
+
+
+\author{Varvara Kovaleva \inst{1} \and Alexander Ponomarenko\inst{2} }
+\authorrunning{V. Kovaleva and A. Ponomarenko}
+\institute{
+HSE University, Nizhny Novgorod, Russia\\
+\email{varvara\_kovaleva03@mail.ru}
+\and
+Laboratory of Algorithms and Technologies for Network Analysis, HSE University, Nizhny Novgorod, Russia\\
+\email{aponomarenko@hse.ru}\\
+}
+
 \maketitle
 
 \begin{abstract}
-\noindent
 We study the problem of routing multiple commodities through a logistic
 transport network so as to minimise the joint cost of vehicle movements and
 of transshipment (reload) operations at intermediate storages. The problem
@@ -81,10 +84,10 @@ optimum on small networks---certified by a branch-and-bound dual bound
 substantially tighter than the LP relaxation---is stable across random seeds,
 and for a comparable wall-clock budget is up to $55\%$ better than a
 time-limited exact solver on the medium instances.
-\end{abstract}
 
-\noindent\textbf{Keywords:} multi-commodity flow; network design; variable
-neighborhood search; metaheuristics; mixed integer programming; logistics.
+\keywords{multi-commodity flow \and network design \and variable neighborhood
+search \and metaheuristics \and mixed integer programming \and logistics}
+\end{abstract}
 
 \section{Introduction}
 
