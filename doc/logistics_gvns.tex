@@ -117,7 +117,10 @@ its variants have proven effective across a broad range of optimisation
 problems. Masri et al.~\cite{masri2015} applied a multi-start VNS to the
 single-path multi-commodity flow problem, and General VNS has performed well
 on the capacitated vehicle routing problem and other flow-constrained logistic
-problems~\cite{amous2017}.
+problems~\cite{amous2017}. Closer to the present setting, problem-specific
+heuristics have proven effective on real-life logistic routing problems, such as
+the truck-and-trailer routing problem with time windows and split
+deliveries~\cite{batsyn2014ttrp,batsyn2015heuristic}.
 
 \paragraph{Contributions.} The aim of this work is the development and study
 of a metaheuristic algorithm, based on General Variable Neighborhood Search
@@ -485,7 +488,7 @@ reproducible from the published random seed and parameters~\cite{benchmark-data}
 \label{sec:experiments}
 
 \subsection{Setup, baselines and metric}
-All experiments were run on the HPC cluster ``cHARISMa'' (nodes with two
+All experiments were run on the HPC cluster ``cHARISMa''~\cite{charisma} (nodes with two
 AMD~EPYC CPUs, 44~cores and $\ge$720\,GB RAM per node, Rocky~Linux~9). Each job
 was pinned to eight cores. The exact models were solved with
 HiGHS~1.14.0~\cite{highs} and, as an independent cross-check of the lower
@@ -744,6 +747,10 @@ models. \textit{Transportation Research}, 1(3):253--269, 1967.
 method. \textit{Mathematical Programming Computation}, 10(1):119--142, 2018.
 \bibitem{scip} S.~Bolusani, M.~Besan\c{c}on, K.~Bestuzheva, et al. The SCIP
 Optimization Suite 9.0. Technical Report, Optimization Online, 2024.
+\bibitem{charisma} Kostenetskiy, P., Kozyrev, V., Chulkevich, R., Salikova, M.,
+Mishenin, R.: High-Performance Computing at HSE University. In: Sokolinsky, L.,
+Zymbler, M., Voevodin, V., Dongarra, J. (eds.) Parallel Computational
+Technologies, pp.~17--29. Springer Nature Switzerland, Cham (2026)
 \bibitem{benchmark} V.~Kovaleva, A.~Ponomarenko. A Benchmark Generator of
 Realistic Logistic Transport Networks with Nonlinear Edge Costs and
 Transshipment Capacities. \textit{arXiv preprint} arXiv:2606.20653, 2026.
