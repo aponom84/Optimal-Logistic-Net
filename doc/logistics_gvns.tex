@@ -720,6 +720,43 @@ available in closed form.}
 \end{table}
 
 
+\subsection{Neighborhood ablation}
+\label{sec:ablation}
+To assess the contribution of each neighborhood we ran a leave-one-out ablation:
+GVNS is re-run with a single neighborhood disabled (in both shake and VND) and
+compared, over three seeds, against the full method. Table~\ref{tab:ablation}
+reports the mean objective increase on a representative subset of synthetic
+($|V|=20$--$50$) and real-geometry ($|V|=16$--$49$) instances.
+
+\begin{table}[t]
+\centering
+\caption{Neighborhood ablation: mean objective increase (best of three seeds)
+when a single neighborhood is disabled, relative to the full GVNS.}
+\label{tab:ablation}
+\small
+\begin{tabular}{lcc}
+\toprule
+Disabled neighborhood & Synthetic & Real\\
+\midrule
+$N_1$ (reload-aware shortest paths) & $+1.5\%$ & $+0.7\%$\\
+$N_2$ (partially loaded edges)      & $+7.2\%$ & $+2.5\%$\\
+$N_3$ (congestion detours)          & $+0.0\%$ & $+0.8\%$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three effects stand out. $N_2$ (vehicle consolidation over partially loaded
+edges) is the dominant operator: removing it costs up to $17.5\%$ on the larger
+synthetic instances and $7.2\%$ on Germany, confirming that filling spare vehicle
+capacity is the main lever on the objective. $N_1$ contributes a smaller but
+consistent improvement. $N_3$ (detours around congested storages) is
+\emph{situational}: it is essentially inactive when storages are far from their
+limit (the synthetic and small real instances), but becomes valuable exactly when
+the transshipment capacity binds---on Germany, where almost every storage operates
+at capacity (Figure~\ref{fig:solution}), disabling $N_3$ worsens the objective by
+$3.6\%$. Each neighborhood thus earns its place, addressing a different source of
+cost.
+
 \subsection{Solution analysis tool}
 To inspect individual solutions in detail we developed an interactive web
 application (Streamlit/Plotly) that loads any instance from the result corpus

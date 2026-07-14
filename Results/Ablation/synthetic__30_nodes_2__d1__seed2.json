@@ -1,0 +1,14 @@
+{
+  "instance": "30_nodes_2",
+  "group": "synthetic",
+  "size": 30,
+  "seed": 2,
+  "disable": "1",
+  "result_price": 1751131.4910763933,
+  "init_price": 3994172.2030000007,
+  "solving_time": 1009.7761583328247,
+  "time_limit": 3600.0,
+  "ok": true,
+  "wall_time": 1009.82,
+  "finished_at": "2026-07-14T08:47:11"
+}

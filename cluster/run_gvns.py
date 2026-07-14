@@ -43,16 +43,20 @@ def main():
     seed = int(row["seed"])
     random.seed(seed)
     time_limit = float(row["time_limit"])
-    print(f"[run] tag={row['tag']} seed={seed} time_limit={time_limit}s")
+    disable = row.get("disable", "").strip()  # e.g. "" (full), "1", "2", "3"
+    disabled = {int(x) for x in disable.split("+") if x}
+    print(f"[run] tag={row['tag']} seed={seed} time_limit={time_limit}s disable={disable or 'none'}")
 
     t0 = time.time()
     try:
         net = NetProducts(float(row["cap"]), row["instance_path"] + "/")
         vns = VNS(net)
+        vns.disabled = disabled
         vns.Solve(time_limit)
         rec = {
             "instance": row["name"], "group": row.get("group", ""),
             "size": int(row.get("size", net.storageCount)), "seed": seed,
+            "disable": disable,
             "result_price": vns.result.resultPrice,
             "init_price": vns.initRes,
             "solving_time": vns.result.solvingTime,
@@ -60,8 +64,8 @@ def main():
         }
     except Exception as e:
         rec = {"instance": row.get("name", ""), "group": row.get("group", ""),
-               "size": int(row.get("size", 0)), "seed": seed, "ok": False,
-               "error": repr(e), "traceback": traceback.format_exc(),
+               "size": int(row.get("size", 0)), "seed": seed, "disable": disable,
+               "ok": False, "error": repr(e), "traceback": traceback.format_exc(),
                "time_limit": time_limit}
     rec["wall_time"] = round(time.time() - t0, 2)
     rec["finished_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")

@@ -1,0 +1,14 @@
+{
+  "instance": "United Kingdom",
+  "group": "real",
+  "size": 42,
+  "seed": 3,
+  "disable": "1",
+  "result_price": 2955898.975145734,
+  "init_price": 5913358.537999998,
+  "solving_time": 2978.9916565418243,
+  "time_limit": 5040.0,
+  "ok": true,
+  "wall_time": 2979.11,
+  "finished_at": "2026-07-14T14:25:10"
+}

@@ -1,0 +1,14 @@
+{
+  "instance": "Hungary",
+  "group": "real",
+  "size": 19,
+  "seed": 1,
+  "disable": "2",
+  "result_price": 426474.2327100001,
+  "init_price": 698502.6859999999,
+  "solving_time": 494.8300323486328,
+  "time_limit": 2280.0,
+  "ok": true,
+  "wall_time": 494.86,
+  "finished_at": "2026-07-14T12:49:09"
+}

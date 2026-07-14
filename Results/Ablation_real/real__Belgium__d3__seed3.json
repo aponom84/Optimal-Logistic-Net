@@ -1,0 +1,14 @@
+{
+  "instance": "Belgium",
+  "group": "real",
+  "size": 16,
+  "seed": 3,
+  "disable": "3",
+  "result_price": 209256.03621999998,
+  "init_price": 295235.3399999998,
+  "solving_time": 1064.8576548099518,
+  "time_limit": 1920.0,
+  "ok": true,
+  "wall_time": 1064.91,
+  "finished_at": "2026-07-14T12:50:10"
+}

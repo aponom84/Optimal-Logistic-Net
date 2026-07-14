@@ -1,0 +1,14 @@
+{
+  "instance": "Germany",
+  "group": "real",
+  "size": 49,
+  "seed": 2,
+  "disable": "2",
+  "result_price": 2417258.3582699983,
+  "init_price": 5921272.234000004,
+  "solving_time": 1278.373554944992,
+  "time_limit": 5880.0,
+  "ok": true,
+  "wall_time": 1278.48,
+  "finished_at": "2026-07-14T14:20:52"
+}
