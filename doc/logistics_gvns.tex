@@ -23,7 +23,6 @@
 \usepackage{xcolor}
 
 \captionsetup{font=small,labelfont=bf}
-\setlength{\parskip}{2pt}
 
 % Formal algorithm typesetting
 \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
@@ -439,49 +438,23 @@ $k \gets 1$\;
 \section{Benchmark instances}
 \label{sec:data}
 
-We evaluate GVNS on our open benchmark~\cite{benchmark} for this problem, a
-corpus of realistic logistic transport networks published as a dataset on
-Zenodo~\cite{benchmark-data} (CC-BY-4.0). We summarise the properties relevant to
-our study and refer the reader to~\cite{benchmark} for the full construction. The
-corpus targets upper-level networks---the road graphs connecting regional sorting
-centres across a country or a large region---and its generator is calibrated on
-OpenStreetMap~\cite{osm} data for nine European countries, five large U.S.\
-states and the European part of Russia.
-
-The generator reproduces the structural statistics of real regional transport
-systems: Zipf-distributed city sizes~\cite{gabaix1999}, a spatial-network budget
-topology in the spirit of Gastner and Newman~\cite{gastner2006}, transshipment
-capacities driven by population and betweenness
-centrality~\cite{barthelemy2011,kirkley2018}, and a doubly constrained gravity
-demand model~\cite{wilson1967}. The resulting graphs are \emph{near-planar with
-large diameters}: the edge-length distribution is dominated by short edges, the
-mean vertex degree is low (about $3.575$, below the planar bound of $6$), and
-diameters are large (Table~\ref{tab:diam})---the opposite of small-world graphs.
-
-\begin{table}[t]
-\centering
-\caption{Diameter and size of representative calibration graphs.}
-\label{tab:diam}
-\small
-\begin{tabular}{lcc@{\hskip 1.2em}lcc}
-\toprule
-Network & diam & $|V|$ & Network & diam & $|V|$\\
-\midrule
-Belgium & 5 & 16 & Italy & 11 & 46\\
-Denmark & 5 & 11 & Sweden & 11 & 45\\
-Germany & 8 & 49 & United Kingdom & 9 & 42\\
-Spain & 9 & 59 & California & 12 & 39\\
-Europe Russia & 16 & 90 & Texas & 10 & 58\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsection{Test set}
-The corpus comprises $35$ fully synthetic instances---$10$ with $10$ storages,
-$7$ each with $20$ and $30$, $5$ with $50$, and $3$ each with $100$ and
-$150$---together with $15$ real-geometry instances built on the calibration road
-graphs ($11$ to $90$ storages). We use all $50$ instances; each is exactly
-reproducible from the published random seed and parameters~\cite{benchmark-data}.
+We evaluate GVNS on our open benchmark~\cite{benchmark,benchmark-data} for this
+problem, published as a dataset on Zenodo (CC-BY-4.0); we summarise here only what
+is needed for the study and refer the reader to~\cite{benchmark} for the full
+generator. The corpus targets upper-level road networks connecting regional
+sorting centres, with a generator calibrated on OpenStreetMap~\cite{osm} data for
+nine European countries, five large U.S.\ states and the European part of Russia.
+It reproduces the structural statistics of real regional transport
+systems---Zipf-distributed city sizes~\cite{gabaix1999}, a spatial-network budget
+topology~\cite{gastner2006}, centrality-driven transshipment
+capacities~\cite{barthelemy2011,kirkley2018} and a doubly constrained gravity
+demand model~\cite{wilson1967}---yielding \emph{near-planar, large-diameter}
+graphs (mean vertex degree about $3.575$), the opposite of small-world networks.
+The corpus comprises $35$ synthetic instances ($10$ with $10$ storages, $7$ each
+with $20$ and $30$, $5$ with $50$, and $3$ each with $100$ and $150$) and $15$
+real-geometry instances built on the calibration road graphs ($11$--$90$
+storages); we use all $50$, each exactly reproducible from its published seed and
+parameters.
 
 \section{Computational experiments}
 \label{sec:experiments}
@@ -689,7 +662,7 @@ available in closed form (Sections~\ref{sec:relax} and~\ref{sec:gvns}).}
 \begin{table}[t]
 \centering
 \caption{Results on the real-geometry regional networks. Sizes are the storage
-counts of the generated instances (matching Table~\ref{tab:diam}).}
+counts of the generated instances.}
 \label{tab:real}
 \small
 \begin{tabular}{lcccccc}
@@ -756,18 +729,6 @@ the transshipment capacity binds---on Germany, where almost every storage operat
 at capacity (Figure~\ref{fig:solution}), disabling $N_3$ worsens the objective by
 $3.6\%$. Each neighborhood thus earns its place, addressing a different source of
 cost.
-
-\subsection{Solution analysis tool}
-To inspect individual solutions in detail we developed an interactive web
-application (Streamlit/Plotly) that loads any instance from the result corpus
-and renders the network on its geographic layout: node sizes encode population
-and capacity, edge widths encode vehicle counts and residual loads, and per-node
-congestion ($overload_v$) is highlighted. The tool supports per-commodity path
-inspection and aggregate statistics, which proved valuable both for debugging
-the neighborhoods and for interpreting the structure of GVNS solutions.
-Figure~\ref{fig:solution} shows a representative GVNS solution on the Germany
-network: freight concentrates on a few high-capacity hubs, and many storages
-operate at or near their transshipment limit.
 
 \begin{figure}[t]
 \centering
