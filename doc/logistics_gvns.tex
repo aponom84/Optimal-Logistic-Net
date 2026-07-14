@@ -735,22 +735,21 @@ vehicle-induced edge costs and hard storage transshipment capacities. We gave
 arc-based and path-based MILP models and their linear relaxation, and proposed a
 GVNS that operates in the path space through three problem-specific
 neighborhoods: reload-aware shortest paths, partially loaded edges, and detours
-around congested storages. To enable evaluation in the absence of public
-benchmarks, we built a generator of realistic logistic networks calibrated on
-real road graphs and reproducing their near-planar topology, Zipf city sizes
-and gravity-model demand.
+around congested storages. 
 
 On $35$ synthetic and $15$ real-geometry instances of up to $150$ storages,
 GVNS produced solutions within about one percent of the best dual bound on
 small networks (a MIP lower bound far tighter than the LP relaxation) and, for a
 comparable budget, up to $55\%$ cheaper than a time-limited exact solver on the
 medium ones; it is stable across random seeds, and its optimality gap grows with
-size, as expected from the exploding path space. Future work includes
-refining and extending the neighborhoods, integrating column-generation pricing
-to feed the path pool, and validating the approach on operational data from
-real logistic systems.
+size, as expected from the exploding path space. A leave-one-out ablation
+confirmed that each neighborhood earns its place: consolidating flow over
+partially loaded edges ($N_2$) is the dominant operator, while congestion detours
+($N_3$) become valuable specifically on capacity-tight instances. Future work
+includes integrating column-generation pricing to feed the path pool and
+validating the approach on operational data from real logistic systems.
 
-\section{Acknowledgments}
+\subsubsection*{Acknowledgements.}
 The study was implemented in the framework of the Basic Research Program at
 HSE University (HSE-BR-2025-080).
 Also, this research was supported in part through computational resources of HPC facilities at HSE University.
