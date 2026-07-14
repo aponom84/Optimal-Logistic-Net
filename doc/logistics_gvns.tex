@@ -728,6 +728,20 @@ and capacity, edge widths encode vehicle counts and residual loads, and per-node
 congestion ($overload_v$) is highlighted. The tool supports per-commodity path
 inspection and aggregate statistics, which proved valuable both for debugging
 the neighborhoods and for interpreting the structure of GVNS solutions.
+Figure~\ref{fig:solution} shows a representative GVNS solution on the Germany
+network: freight concentrates on a few high-capacity hubs, and many storages
+operate at or near their transshipment limit.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{figs/germany_solution.pdf}
+\caption{A GVNS solution on the Germany real-geometry network ($|V|=49$), drawn
+on its geographic layout. Node area encodes the transshipment capacity $W_v$ and
+node colour the congestion $overload_v$ (dark $=$ at capacity). All used edges
+are drawn faintly; backbone edges carrying at least three vehicles are emphasized
+with width proportional to the vehicle count.}
+\label{fig:solution}
+\end{figure}
 
 \section{Conclusion}
 We addressed the design of optimal logistic transport flows with nonlinear,
