@@ -24,6 +24,7 @@
 
 \captionsetup{font=small,labelfont=bf}
 
+\usepackage{placeins}  % \FloatBarrier -- keep floats out of the reference list
 % Formal algorithm typesetting
 \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
 \SetKwProg{Fn}{Function}{:}{}
@@ -43,7 +44,7 @@
 
 \title{A General Variable Neighborhood Search for Logistic Network
 Flow Design with Nonlinear Edge Costs and Transshipment Capacities}
-\titlerunning{GVNS for Logistic Network Flow Design with Nonlinear Costs and Capacities}
+\titlerunning{GVNS for Logistic Network Flow Design}
 
 
 \author{Varvara Kovaleva \inst{1} \and Alexander Ponomarenko\inst{2} }
@@ -477,10 +478,12 @@ allowed $100$~min against the exact solver's $2$~h, and at $|V|=10$ it is
 $20$~min against $30$~min.
 
 The main algorithm settings are collected in Table~\ref{tab:params}. The size of
-the arc-based MIP grows steeply with $|V|$ (Table~\ref{tab:dims}): from about
-$6\,000$ variables at $|V|=10$ to $3.7\times10^{8}$ at $|V|=150$, which is why the
-exact model becomes intractable well before that size while GVNS, working in the
-much smaller path space, remains applicable throughout.
+the arc-based MIP grows steeply with $|V|$---from about $6\,000$ variables at
+$|V|=10$ (edges $|E|=90$, commodities $|K|=67$) to $3.7\times10^{8}$ at $|V|=150$
+($|E|=22\,350$, $|K|=16\,762$)---which is why the exact model becomes intractable
+well before that size while GVNS, working in the much smaller path space, remains
+applicable throughout. A GVNS run took, on average, from about $640$~s at
+$|V|=10$ to $3.7\times10^{3}$~s at $|V|=50$ and $1.8\times10^{4}$~s at $|V|=150$.
 
 \begin{table}[t]
 \centering
@@ -503,27 +506,6 @@ $N_3$ congestion threshold (VND\,/\,Shake) & $0.75$\,/\,$0.5$\\
 $N_3$ storage-subset size (VND\,/\,Shake) & $|V|/5$--$|V|/4$\,/\,$|V|/4$--$|V|/3$\\
 Exact-solver MIP-gap target & $0$\\
 Exact-solver budget & $30$~min ($|V|{=}10$) \dots\ $4$~h ($|V|{=}150$)\\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{table}[t]
-\centering
-\caption{Size of the arc-based MIP and mean GVNS running time on the synthetic
-instances (means over instances of each size). $|E|$: directed edges of the
-completed graph; $|K|$: commodities; variables $=|E|\,(|K|+1)$.}
-\label{tab:dims}
-\small
-\begin{tabular}{ccccc}
-\toprule
-$|V|$ & $|E|$ & $|K|$ & MIP variables & GVNS time (s)\\
-\midrule
-10  & 90     & 67     & $6.1\times10^{3}$ & 636\\
-20  & 380    & 285    & $1.1\times10^{5}$ & 1929\\
-30  & 870    & 652    & $5.7\times10^{5}$ & 2528\\
-50  & 2\,450  & 1\,837  & $4.5\times10^{6}$ & 3701\\
-100 & 9\,900  & 7\,425  & $7.4\times10^{7}$ & 6161\\
-150 & 22\,350 & 16\,762 & $3.7\times10^{8}$ & 18210\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -768,6 +750,7 @@ HSE University (HSE-BR-2025-080).
 Also, this research was supported in part through computational resources of HPC facilities at HSE University.
 
 
+\FloatBarrier
 \begin{thebibliography}{99}
 \small
 \bibitem{barnhart1998} C.~Barnhart, E.~L.~Johnson, G.~L.~Nemhauser,
