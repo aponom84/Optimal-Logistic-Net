@@ -375,23 +375,6 @@ from $|\Vv|/5$ to $|\Vv|/4$, with threshold $0.75$ and one path per
 configuration; in Shake the range widens to $|\Vv|/4$--$|\Vv|/3$, the threshold
 drops to $0.5$ and three paths are generated per configuration.
 
-\subsection{Overall algorithm}
-The method is given by Algorithms~\ref{alg:pn} and~\ref{alg:gvns}.
-Algorithm~\ref{alg:pn} is the primitive shared by the three neighborhoods: it
-generates a set of candidate paths---the only step that differs between $N_1$,
-$N_2$ and $N_3$, via \GenPaths---enlarges the path pool, re-optimises the
-commodity flows with the path-based MILP of Section~\ref{sec:model}, warm-started
-from the current solution, and, \emph{only} if the objective improves, commits
-the new paths that carry flow while pruning those that do not, which keeps the
-model bounded. Algorithm~\ref{alg:gvns} embeds this primitive in the GVNS
-template: starting from the rounded-LP solution of Eq.~\eqref{eq:init}, each round
-shakes with the current neighborhood---diversified parameters and a larger MILP
-budget $\tau_{\mathrm{shk}}$---and then runs the VND sweep
-$N_1\!\to\!N_2\!\to\!N_3$ with a smaller budget $\tau_{\mathrm{vnd}}$, since VND
-explores a narrower region. The neighborhood index resets on improvement and
-advances otherwise; a global limit $t_{\max}$ bounds the run, and the search
-stops once a full sweep brings no improvement.
-
 \begin{algorithm}[t]
 \DontPrintSemicolon
 \Fn{\PN{$P,\ x,\ z,\ N,\ \mathit{div},\ \tau$}}{
@@ -435,6 +418,25 @@ $k \gets 1$\;
 \caption{\texttt{GVNS} for logistic network flow design.}
 \label{alg:gvns}
 \end{algorithm}
+
+\subsection{Overall algorithm}
+The method is given by Algorithms~\ref{alg:pn} and~\ref{alg:gvns}.
+Algorithm~\ref{alg:pn} is the primitive shared by the three neighborhoods: it
+generates a set of candidate paths---the only step that differs between $N_1$,
+$N_2$ and $N_3$, via \GenPaths---enlarges the path pool, re-optimises the
+commodity flows with the path-based MILP of Section~\ref{sec:model}, warm-started
+from the current solution, and, \emph{only} if the objective improves, commits
+the new paths that carry flow while pruning those that do not, which keeps the
+model bounded. Algorithm~\ref{alg:gvns} embeds this primitive in the GVNS
+template: starting from the rounded-LP solution of Eq.~\eqref{eq:init}, each round
+shakes with the current neighborhood---diversified parameters and a larger MILP
+budget $\tau_{\mathrm{shk}}$---and then runs the VND sweep
+$N_1\!\to\!N_2\!\to\!N_3$ with a smaller budget $\tau_{\mathrm{vnd}}$, since VND
+explores a narrower region. The neighborhood index resets on improvement and
+advances otherwise; a global limit $t_{\max}$ bounds the run, and the search
+stops once a full sweep brings no improvement.
+
+
 
 \section{Benchmark instances}
 \label{sec:data}
@@ -558,6 +560,17 @@ markedly better incumbents, whereas SCIP fails to find any feasible solution on
 several instances with $|V|\!\ge\!45$ and runs out of memory at $|V|=150$. HiGHS
 is thus both the stronger exact solver here and the natural in-loop choice.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\textwidth]{figs/germany_solution.pdf}
+\caption{A GVNS solution on the Germany real-geometry network ($|V|=49$), drawn
+on its geographic layout. Node area encodes the transshipment capacity $W_v$ and
+node colour the congestion $overload_v$ (dark $=$ at capacity). All used edges
+are drawn faintly; backbone edges carrying at least three vehicles are emphasized
+with width proportional to the vehicle count.}
+\label{fig:solution}
+\end{figure}
+
 \subsection{Results}
 Tables~\ref{tab:synth} and~\ref{tab:real} summarise the synthetic and
 real-geometry results; Figure~\ref{fig:ratios} plots the optimality gap and the
@@ -677,11 +690,6 @@ available in closed form.}
 
 \subsection{Neighborhood ablation}
 \label{sec:ablation}
-To assess the contribution of each neighborhood we ran a leave-one-out ablation:
-GVNS is re-run with a single neighborhood disabled (in both shake and VND) and
-compared, over three seeds, against the full method. Table~\ref{tab:ablation}
-reports the mean objective increase on a representative subset of synthetic
-($|V|=20$--$50$) and real-geometry ($|V|=16$--$49$) instances.
 
 \begin{table}[t]
 \centering
@@ -699,6 +707,13 @@ $N_3$ (congestion detours)          & $+0.0\%$ & $+0.8\%$\\
 \bottomrule
 \end{tabular}
 \end{table}
+To assess the contribution of each neighborhood we ran a leave-one-out ablation:
+GVNS is re-run with a single neighborhood disabled (in both shake and VND) and
+compared, over three seeds, against the full method. Table~\ref{tab:ablation}
+reports the mean objective increase on a representative subset of synthetic
+($|V|=20$--$50$) and real-geometry ($|V|=16$--$49$) instances.
+
+
 
 Three effects stand out. $N_2$ (vehicle consolidation over partially loaded
 edges) is the dominant operator: removing it costs up to $17.5\%$ on the larger
@@ -712,16 +727,7 @@ at capacity (Figure~\ref{fig:solution}), disabling $N_3$ worsens the objective b
 $3.6\%$. Each neighborhood thus earns its place, addressing a different source of
 cost.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.62\textwidth]{figs/germany_solution.pdf}
-\caption{A GVNS solution on the Germany real-geometry network ($|V|=49$), drawn
-on its geographic layout. Node area encodes the transshipment capacity $W_v$ and
-node colour the congestion $overload_v$ (dark $=$ at capacity). All used edges
-are drawn faintly; backbone edges carrying at least three vehicles are emphasized
-with width proportional to the vehicle count.}
-\label{fig:solution}
-\end{figure}
+
 
 \section{Conclusion}
 We addressed the design of optimal logistic transport flows with nonlinear,
