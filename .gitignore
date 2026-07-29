@@ -2,6 +2,7 @@
 # Optimal-Logistic-Net — .gitignore
 # ---------------------------------------------------------------
 access/
+Generated_Data/
 # --- OS / desktop junk ---
 .DS_Store
 .DS_Store?
