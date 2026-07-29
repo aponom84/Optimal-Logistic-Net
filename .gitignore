@@ -3,6 +3,7 @@
 # ---------------------------------------------------------------
 access/
 Generated_Data/
+literature/
 # --- OS / desktop junk ---
 .DS_Store
 .DS_Store?
