@@ -12,6 +12,7 @@ class VNS:
         self.shortestPaths = ShortestPaths()
         self.result = None
         self.initRes = None
+        self.disabled = set()  # neighborhood ids (1,2,3) to skip -- for ablation
 
     def Solve(self, maxSolvingTime):
         startTime = time()
@@ -119,10 +120,14 @@ class VNS:
         return success
 
     def ProccessAddNewShortestPathsNeighborhood(self, newPathsCount, random, maxTime):
+        if 1 in self.disabled:
+            return False
         newPaths = {productId : self.shortestPaths.GetNewShortestPaths(productId, random,newPathsCount, self.data) for productId in self.net.productId}
         return self.ProcessNewPaths(newPaths, maxTime)
 
     def ProccessAddNewShortestPathsAvoidingStoragesNeighborhood(self, newPathsCount, minCount, overloadTreshold, maxStoragesCount, maxTime):
+        if 3 in self.disabled:
+            return False
         sumOverload = {storage : 0 for storage in self.net.storageId}
         for (productId, flows) in self.result.productPathFlow.items():
             for (pathI, volume) in flows.items():
@@ -162,6 +167,8 @@ class VNS:
         return self.ProcessNewPaths(newPaths, maxTime)
     
     def ProccessAddNewShortestPathsThroughUsedEdgesNeighborhood(self, newPathsCount, vehicleCoeff, maxTime):
+        if 2 in self.disabled:
+            return False
         edgeFlow = {edge : 0 for edge in self.net.edges}
         for (productId, flows) in self.result.productPathFlow.items():
             for (pathI, volume) in flows.items():
