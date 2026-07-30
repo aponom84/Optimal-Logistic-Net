@@ -1,0 +1,40 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+===========================================================
+
+The DATA in this repository -- the generated benchmark instances and
+computational results contained in the directories Generated_Data/ and
+Results/ (and their archives Generated_Data.zip and Results.zip) -- are
+licensed under the Creative Commons Attribution 4.0 International License.
+
+You are free to:
+  * Share  -- copy and redistribute the material in any medium or format.
+  * Adapt  -- remix, transform, and build upon the material for any purpose,
+              even commercially.
+
+Under the following terms:
+  * Attribution -- You must give appropriate credit, provide a link to the
+    license, and indicate if changes were made. You may do so in any reasonable
+    manner, but not in any way that suggests the licensor endorses you or your
+    use.
+  * No additional restrictions -- You may not apply legal terms or
+    technological measures that legally restrict others from doing anything the
+    license permits.
+
+The full legal text of the license is available at:
+  https://creativecommons.org/licenses/by/4.0/legalcode
+
+A human-readable summary is available at:
+  https://creativecommons.org/licenses/by/4.0/
+
+-------------------------------------------------------------------------------
+How to attribute
+-------------------------------------------------------------------------------
+When using this data, please cite:
+
+  V. Kovaleva and A. Ponomarenko, "A Benchmark Generator of Realistic Logistic
+  Transport Networks with Nonlinear Edge Costs and Transshipment Capacities",
+  HSE University, Laboratory of Algorithms and Technologies for Network
+  Analysis, Nizhny Novgorod, 2026. Data set archived at <DOI to be assigned>.
+
+(Note: the SOURCE CODE in this repository is licensed separately under the MIT
+License; see LICENSE.)

@@ -4,6 +4,10 @@
 access/
 Generated_Data/
 literature/
+# internal defense/report decks — not for publication
+presentation/
+# Zenodo data archive lives on Zenodo, not in git
+logistic-network-benchmark-*.zip
 # --- OS / desktop junk ---
 .DS_Store
 .DS_Store?

@@ -1,8 +1,8 @@
 """Regenerate the Section-6 ratio figures from the final results.
 
-Produces doc/figs/synthetic_ratios.pdf and doc/figs/real_ratios.pdf: the
-objective ratio of each reference method to GVNS vs network size, plus the GVNS
-optimality gap to the best lower bound.
+Produces papers/GVNS/figs/synthetic_ratios.pdf and papers/GVNS/figs/real_ratios.pdf:
+the objective ratio of each reference method to GVNS vs network size, plus the
+GVNS optimality gap to the best lower bound.
 
     python cluster/plot_results.py
 """
@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PER = os.path.join(REPO, "Results/final_per_instance.csv")
-OUT = os.path.join(REPO, "doc/figs")
+OUT = os.path.join(REPO, "papers/GVNS/figs")
 
 
 def num(x):

@@ -6,7 +6,7 @@ overload$_v$), and used edges are drawn with width proportional to the number of
 vehicles. Produces a PDF for the paper.
 
     python cluster/plot_solution.py --instance Generated_Data/Real_Graph/Germany \
-        --solution Results/Real_Graph/Germany --out doc/figs/germany_solution.pdf
+        --solution Results/Real_Graph/Germany --out papers/GVNS/figs/germany_solution.pdf
 """
 import argparse
 import ast

@@ -1,0 +1,29 @@
+# Python dependencies for Optimal-Logistic-Net (generator, GVNS, exact study).
+# Tested with Python 3.11.  Install into a fresh environment:
+#
+#     python -m venv .venv && source .venv/bin/activate
+#     pip install -r requirements.txt
+#
+# The cluster runs (Section 6 of the GVNS paper) used a conda env named "olnet";
+# these pins reproduce the same stack with pip.  For the interactive viewer only,
+# see viz_tool/requirements.txt (a lighter subset).
+
+# --- core: instance loading, generation, LP relaxation, tables, plots ---
+numpy>=1.24
+scipy>=1.10
+pandas>=2.0
+networkx>=3.1
+matplotlib>=3.7
+scikit-learn>=1.3      # Generator.py: clustering / statistics
+pulp>=2.7              # Solver.py: LP/MILP modelling layer
+
+# --- exact-solver study (cluster/, exact_solver.py) ---
+# The paper used HiGHS 1.14.0 and SCIP 10.0.2.  highspy's version tracks the
+# bundled HiGHS release exactly; pyscipopt must be built against SCIP 10.0.x
+# (e.g. `conda install -c conda-forge scip=10.0.2 pyscipopt`).
+highspy==1.14.0        # HiGHS 1.14.0 — in-loop redistribution solver + exact backend
+pyscipopt>=5.5         # SCIP 10.0.2 cross-check backend (see note above)
+
+# --- interactive viewer (viz_tool/) ---
+streamlit>=1.30
+plotly>=5.18

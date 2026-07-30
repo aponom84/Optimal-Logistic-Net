@@ -1,16 +1,23 @@
 # Optimal-Logistic-Net
 
-A benchmark generator and instance corpus for **logistic transport network flow
-problems with nonlinear (vehicle-induced) edge costs and hard storage
-transshipment capacities**, together with the code used to generate, solve and
-visualise the instances.
+Code and data for **logistic transport network flow problems with nonlinear
+(vehicle-induced) edge costs and hard storage transshipment capacities**: a
+benchmark generator and instance corpus, an exact MILP solver, and a General
+Variable Neighborhood Search (GVNS) metaheuristic, plus everything needed to
+reproduce the published experiments.
 
-This repository accompanies the paper:
+This repository backs two papers:
 
-> V. Kovaleva and A. Ponomarenko. *A Benchmark Generator of Realistic Logistic
-> Transport Networks with Nonlinear Edge Costs and Transshipment Capacities.*
-> HSE University, Laboratory of Algorithms and Technologies for Network
-> Analysis, Nizhny Novgorod, 2026.
+1. **Benchmark.** V. Kovaleva and A. Ponomarenko. *A Benchmark Generator of
+   Realistic Logistic Transport Networks with Nonlinear Edge Costs and
+   Transshipment Capacities.* arXiv:2606.20653, 2026. Instance corpus archived
+   on Zenodo: [10.5281/zenodo.20372456](https://doi.org/10.5281/zenodo.20372456)
+   (CC BY 4.0).
+2. **GVNS.** V. Kovaleva and A. Ponomarenko. *A General Variable Neighborhood
+   Search for Logistic Network Flow Design with Nonlinear Edge Costs and
+   Transshipment Capacities.* Submitted to a Springer LNCS conference volume,
+   2026. The `cluster/` pipeline, `exact_solver.py` and `VNS.py` reproduce its
+   computational study (Section 6).
 
 ---
 
@@ -32,7 +39,32 @@ The resulting model is a mixed-integer linear program (MILP); it is NP-hard.
 
 ---
 
-## 2. The benchmark corpus
+## 2. Installation
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+The exact-solver study uses **HiGHS 1.14.0** (`highspy`) and, as an independent
+cross-check, **SCIP 10.0.2** (`pyscipopt`, which must be built against SCIP
+10.0.x — e.g. `conda install -c conda-forge scip=10.0.2 pyscipopt`). See
+`requirements.txt` for the full list. The interactive viewer has a lighter
+dependency set in `viz_tool/requirements.txt`.
+
+---
+
+## 3. Getting the instance data
+
+The instance corpus is **not stored in this repository** (it is large and lives
+on Zenodo). Download it and unpack it into `Generated_Data/`, which every script
+expects:
+
+```bash
+# from https://doi.org/10.5281/zenodo.20372456
+#   -> Generated_Data/Synthetic/<size>_nodes_<i>/
+#   -> Generated_Data/Real_Graph/<Country>/
+```
 
 | Set | # instances | Sizes (`|V|`) | Source of geometry |
 |-----|-------------|---------------|--------------------|
@@ -43,13 +75,9 @@ Synthetic counts by size: 10×`|V|=10`, 7×20, 7×30, 5×50, 3×100, 3×150.
 Real-geometry networks: 9 European countries, 5 U.S. states and European Russia.
 Commodity counts range from 67 to over 16,000.
 
-The empirical analysis in the paper (degree, diameter, edge-length, rank–size
-and demand statistics, plus two-sample Kolmogorov–Smirnov tests) shows the
-synthetic instances are structurally consistent with the real-geometry ones.
+Alternatively, regenerate synthetic instances from scratch (Section 6).
 
----
-
-## 3. Instance file format
+### Instance file format
 
 Each instance is a self-describing directory:
 
@@ -62,46 +90,121 @@ Each instance is a self-describing directory:
 | `distance_matrix.csv`  | all-pairs shortest road distances |
 | `data.txt`             | random seed and every generation parameter (incl. `vehicle_capacity` = `C`) |
 
-`Results/` mirrors the instance layout and stores the computational results.
-
-### Loading an instance (Python)
-
 ```python
-import networkx as nx
-import pandas as pd
-
+import networkx as nx, pandas as pd
 inst = "Generated_Data/Synthetic/50_nodes_1"
 G        = nx.read_graphml(f"{inst}/graph.graphml")   # nodes carry x, y; edges carry weight
 offices  = pd.read_csv(f"{inst}/offices.csv")          # f_v = transfer_price, W_v = transfer_max
 requests = pd.read_csv(f"{inst}/reqs.csv")             # s_k, t_k, d_k
 params   = dict(line.split(" = ", 1) for line in open(f"{inst}/data.txt") if " = " in line)
-C        = float(params["vehicle_capacity"])           # vehicle capacity
+C        = float(params["vehicle_capacity"])
 ```
 
----
-
-## 4. Generating new instances
-
-`Generator.py` builds an instance from a target number of storages `k` using a
-five-stage pipeline: (1) Zipf-distributed city sizes, (2) clustered spatial
-layout and greedy storage selection, (3) topology via a spatial-network budget
-model (minimum spanning tree + simulated-annealing edge addition under a
-budget), (4) capacities from population and betweenness centrality with reload
-costs reflecting economies of scale, and (5) demand from a doubly constrained
-gravity model. Every parameter and the random seed are written to `data.txt`, so
-each instance regenerates exactly. See `main.py` for entry points.
+`Results/` mirrors the instance layout and is committed, so the paper tables can
+be regenerated without re-running the cluster (Section 5).
 
 ---
 
-## 5. Solving and visualising
+## 4. Running the solvers on one instance
 
-* Solvers: `Solver.py` (exact MILP via HiGHS, plus the LP relaxation) and
-  `VNS.py` (a metaheuristic). `ShortestPaths.py`, `NetProductPath.py`, etc. are
-  supporting modules.
-* Interactive viewer: `viz_tool/` is a Streamlit/Plotly application that draws
-  any instance on its geographic layout (node size = capacity, edge width =
-  vehicle load, node colour = congestion) and supports per-commodity path
-  inspection.
+**Exact MILP** (arc-based model; reports primal, dual bound, MIP gap, status):
+
+```bash
+python exact_solver.py --instance Generated_Data/Synthetic/10_nodes_1 \
+    --backend scip --cap 50 --time 600 --gap 0.0     # or --backend highs
+```
+
+**GVNS metaheuristic** (stochastic; seed the RNG for reproducibility):
+
+```python
+import random
+from NetProductPath import NetProducts
+from VNS import VNS
+
+random.seed(1)
+net = NetProducts(50.0, "Generated_Data/Synthetic/10_nodes_1/")   # cap C = 50
+vns = VNS(net)
+vns.Solve(20 * 60)                      # time limit in seconds (paper: 2*|V| minutes)
+print(vns.result.resultPrice, vns.result.solvingTime)
+```
+
+Key modules: `VNS.py` (GVNS + the three neighborhoods), `Solver.py` (HiGHS MILP
+and the LP relaxation), `NetProductPath.py` / `ShortestPaths.py` (path model and
+reload-aware shortest paths), `exact_solver.py` (the exact study backend).
+
+---
+
+## 5. Reproducing the GVNS paper's tables and figures
+
+`Results/` ships with the committed run outputs, so the **tables regenerate
+offline**:
+
+```bash
+python cluster/build_table.py      # -> Results/final_per_instance.csv, final_by_size.csv
+                                   #    + the LaTeX per-size rows (Tables 2–3) on stdout
+python cluster/plot_results.py     # -> papers/GVNS/figs/{synthetic,real}_ratios.pdf (Fig. 2)
+python cluster/plot_solution.py --instance Generated_Data/Real_Graph/Germany \
+    --solution Results/Real_Graph/Germany \
+    --out papers/GVNS/figs/germany_solution.pdf                              # Fig. 1
+```
+
+`build_table.py` needs only the committed `Results/*.json` and
+`Results/lp_bounds.csv`; the two plotting scripts additionally read the instance
+geometry from `Generated_Data/` (Section 3).
+
+---
+
+## 6. Re-running the full study (cluster)
+
+The experiments were run on the HSE *cHARISMa* HPC cluster with SLURM job arrays.
+The scripts are repo-root-relative and take the cHARISMa `rocky` partition and
+account `proj_1844` — **edit the `#SBATCH --account`/`--partition` lines in
+`cluster/*.slurm` for your site**, then:
+
+```bash
+# (1) exact dual bounds + incumbents (SCIP everywhere, HiGHS up to |V|=50)
+python cluster/make_manifest.py --sets synthetic real \
+    --backends scip highs --highs-max-size 50 --out cluster/manifest.csv
+sbatch --array=1-N%10 cluster/exact_array.slurm cluster/manifest.csv Results/Exact
+
+# (2) multi-seed GVNS (paper uses 3 seeds; budget = 2*|V| minutes)
+python cluster/make_gvns_manifest.py --sets synthetic real --seeds 3 \
+    --out cluster/gvns_manifest.csv
+sbatch --array=1-M%K cluster/gvns_array.slurm cluster/gvns_manifest.csv Results/GVNS
+
+# (3) closed-form LP reference bounds (fast, no cluster needed)
+python cluster/lp_bounds.py --sets synthetic real --out Results/lp_bounds.csv
+
+# (4) neighborhood ablation (leave-one-out N1/N2/N3)
+python cluster/make_ablation_manifest.py --group synthetic --sizes 20 30 50 \
+    --out cluster/ablation_manifest.csv
+sbatch --array=1-A%K cluster/gvns_array.slurm cluster/ablation_manifest.csv Results/Ablation
+```
+
+`N`, `M`, `A` are the manifest row counts printed by each `make_*` script; `%K`
+caps concurrent array tasks. `run_one.py` / `run_gvns.py` are idempotent — an
+existing output JSON is skipped, so a partial array can simply be resubmitted.
+`cluster/aggregate.py` gives a per-size summary of the exact solves. Then rebuild
+the tables and figures as in Section 5.
+
+### Generating fresh synthetic instances
+
+`Generator.py` builds an instance from a target storage count via a five-stage
+pipeline: (1) Zipf-distributed city sizes, (2) clustered spatial layout and
+greedy storage selection, (3) topology from a spatial-network budget model
+(minimum spanning tree + simulated-annealing edge addition under a budget),
+(4) capacities from population and betweenness centrality with economies-of-scale
+reload costs, and (5) demand from a doubly constrained gravity model. Every
+parameter and the random seed are written to `data.txt`, so each instance
+regenerates exactly. See `main.py` (`GenerateGraphs`) for entry points.
+
+---
+
+## 7. Interactive viewer
+
+`viz_tool/` is a Streamlit/Plotly app that draws any instance on its geographic
+layout (node size = capacity, edge width = vehicle load, node colour =
+congestion) and supports per-commodity path inspection.
 
 ```bash
 pip install -r viz_tool/requirements.txt
@@ -110,34 +213,42 @@ streamlit run viz_tool/app.py
 
 ---
 
-## 6. Reproducibility
+## 8. Citation
 
-Every instance directory contains the random seed and the full parameter set in
-`data.txt`; re-running the generator with those values reproduces the instance
-(up to the documented random perturbations, which are themselves seeded).
-
----
-
-## 7. Citation
+**Benchmark generator and dataset** (`CITATION.cff` carries the machine-readable
+form):
 
 ```bibtex
-@inproceedings{kovaleva2026benchmark,
-  author    = {Kovaleva, Varvara and Ponomarenko, Alexander},
-  title     = {A Benchmark Generator of Realistic Logistic Transport Networks
-               with Nonlinear Edge Costs and Transshipment Capacities},
-  year      = {2026},
-  note      = {Data set archived at <DOI to be assigned>}
+@article{kovaleva2026benchmark,
+  author  = {Kovaleva, Varvara and Ponomarenko, Alexander},
+  title   = {A Benchmark Generator of Realistic Logistic Transport Networks
+             with Nonlinear Edge Costs and Transshipment Capacities},
+  journal = {arXiv preprint arXiv:2606.20653},
+  year    = {2026},
+  note    = {Dataset: \url{https://doi.org/10.5281/zenodo.20372456}}
 }
 ```
 
-When the corpus is deposited (e.g. on Zenodo), replace `<DOI to be assigned>`
-with the minted DOI here and in `LICENSE-DATA.txt`.
+**GVNS solver** (this repository's algorithm and experiments):
+
+```bibtex
+@inproceedings{kovaleva2026gvns,
+  author    = {Kovaleva, Varvara and Ponomarenko, Alexander},
+  title     = {A General Variable Neighborhood Search for Logistic Network Flow
+               Design with Nonlinear Edge Costs and Transshipment Capacities},
+  booktitle = {Lecture Notes in Computer Science},
+  publisher = {Springer},
+  year      = {2026},
+  note      = {To appear}
+}
+```
 
 ---
 
-## 8. License
+## 9. License
 
-* **Source code** (`*.py`, `viz_tool/`): MIT License — see [`LICENSE`](LICENSE).
+* **Source code** (`*.py`, `cluster/`, `viz_tool/`): MIT License — see
+  [`LICENSE`](LICENSE).
 * **Data** (`Generated_Data/`, `Results/` and their archives): Creative Commons
   Attribution 4.0 International (CC BY 4.0) — see
   [`LICENSE-DATA.txt`](LICENSE-DATA.txt).
