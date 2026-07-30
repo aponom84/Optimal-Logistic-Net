@@ -716,7 +716,7 @@ reports the mean objective increase on a representative subset of synthetic
 
 
 Three effects stand out. $N_2$ (vehicle consolidation over partially loaded
-edges) is the dominant operator: removing it costs up to $17.5\%$ on the larger
+edges) is the dominant operator: removing it costs up to $24.7\%$ on the larger
 synthetic instances and $7.2\%$ on Germany, confirming that filling spare vehicle
 capacity is the main lever on the objective. $N_1$ contributes a smaller but
 consistent improvement. $N_3$ (detours around congested storages) is
@@ -748,6 +748,13 @@ partially loaded edges ($N_2$) is the dominant operator, while congestion detour
 ($N_3$) become valuable specifically on capacity-tight instances. Future work
 includes integrating column-generation pricing to feed the path pool and
 validating the approach on operational data from real logistic systems.
+
+\subsubsection*{Code and data availability.}
+The GVNS implementation, the exact-solver harness and the scripts that reproduce
+the experiments of Section~\ref{sec:experiments} are available at
+\url{https://github.com/aponom84/Optimal-Logistic-Net}. The benchmark instances
+are published as a Zenodo dataset~\cite{benchmark-data} under CC-BY-4.0, and each
+is reproducible from its seed and parameters~\cite{benchmark}.
 
 \subsubsection*{Acknowledgements.}
 The study was implemented in the framework of the Basic Research Program at
@@ -798,8 +805,8 @@ Physics}, 14:250--258, 2018.
 models. \textit{Transportation Research}, 1(3):253--269, 1967.
 \bibitem{highs} Q.~Huangfu, J.~A.~J.~Hall. Parallelizing the dual revised simplex
 method. \textit{Mathematical Programming Computation}, 10(1):119--142, 2018.
-\bibitem{scip} S.~Bolusani, M.~Besan\c{c}on, K.~Bestuzheva, et al. The SCIP
-Optimization Suite 9.0. Technical Report, Optimization Online, 2024.
+\bibitem{scip} C.~Hojny, M.~Besan\c{c}on, K.~Bestuzheva, et al. The SCIP
+Optimization Suite 10.0. \textit{arXiv preprint} arXiv:2511.18580, 2025.
 \bibitem{charisma} Kostenetskiy, P., Kozyrev, V., Chulkevich, R., Salikova, M.,
 Mishenin, R.: High-Performance Computing at HSE University. In: Sokolinsky, L.,
 Zymbler, M., Voevodin, V., Dongarra, J. (eds.) Parallel Computational
