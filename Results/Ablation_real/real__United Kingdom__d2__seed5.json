@@ -1,0 +1,16 @@
+{
+  "instance": "United Kingdom",
+  "group": "real",
+  "size": 42,
+  "seed": 5,
+  "disable": "2",
+  "variant": "gvns",
+  "n3": "single",
+  "result_price": 3015954.814208222,
+  "init_price": 5913358.537999998,
+  "solving_time": 1368.9211010932922,
+  "time_limit": 5040.0,
+  "ok": true,
+  "wall_time": 1369.02,
+  "finished_at": "2026-08-26T21:37:13"
+}

@@ -1,0 +1,16 @@
+{
+  "instance": "Ohio_USA",
+  "group": "real",
+  "size": 22,
+  "seed": 4,
+  "disable": "",
+  "variant": "gvns",
+  "n3": "sweep",
+  "result_price": 494808.74237000017,
+  "init_price": 798854.1789999995,
+  "solving_time": 2301.6522839069366,
+  "time_limit": 2640.0,
+  "ok": true,
+  "wall_time": 2301.68,
+  "finished_at": "2026-08-27T00:57:15"
+}

@@ -1,0 +1,16 @@
+{
+  "instance": "20_nodes_3",
+  "group": "synthetic",
+  "size": 20,
+  "seed": 2,
+  "disable": "",
+  "variant": "bvns",
+  "n3": "single",
+  "result_price": 825660.4743200004,
+  "init_price": 1363579.234,
+  "solving_time": 875.1891083717346,
+  "time_limit": 2400.0,
+  "ok": true,
+  "wall_time": 875.23,
+  "finished_at": "2026-08-27T02:20:30"
+}

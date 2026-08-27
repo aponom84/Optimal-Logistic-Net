@@ -32,6 +32,10 @@ def main():
                     help="neighborhoods to leave out, one variant each")
     ap.add_argument("--cap", type=float, default=50)
     ap.add_argument("--minutes-per-size", type=float, default=2.0)
+    ap.add_argument("--names", nargs="*", default=None,
+                    help="restrict to these instance names (default: all in --sizes)")
+    ap.add_argument("--n3", default="sweep", choices=["sweep", "single"],
+                    help="N3 configuration; must match the full-GVNS run it is compared against")
     ap.add_argument("--out", default="cluster/ablation_manifest.csv")
     args = ap.parse_args()
 
@@ -42,6 +46,8 @@ def main():
         if not os.path.isdir(folder) or not os.path.exists(os.path.join(folder, "offices.csv")):
             continue
         s = storages_of(folder)
+        if args.names and name not in args.names:
+            continue
         if s in args.sizes:
             by_size.setdefault(s, []).append(name)
 
@@ -57,18 +63,19 @@ def main():
                         "group": args.group, "name": name, "size": s,
                         "instance_path": os.path.join(SET_DIRS[args.group], name),
                         "seed": seed, "cap": args.cap, "time_limit": tl, "disable": dis,
+                        "variant": "gvns", "n3": args.n3,
                     })
 
     rows.sort(key=lambda r: (r["size"], r["name"], r["disable"], r["seed"]))
     fields = ["tag", "group", "name", "size", "instance_path", "seed", "cap",
-              "time_limit", "disable"]
+              "time_limit", "disable", "variant", "n3"]
     out = os.path.join(REPO, args.out) if not os.path.isabs(args.out) else args.out
     with open(out, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fields)
         w.writeheader()
         w.writerows(rows)
     total_h = sum(r["time_limit"] for r in rows) / 3600.0
-    print(f"wrote {len(rows)} ablation jobs -> {out}")
+    print(f"wrote {len(rows)} ablation jobs (n3={args.n3}) -> {out}")
     print(f"worst-case wall if all hit their limit: {total_h:.1f} job-hours")
     for s in args.sizes:
         n = len([r for r in rows if r["size"] == s])

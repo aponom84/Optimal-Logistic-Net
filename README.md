@@ -140,17 +140,22 @@ reload-aware shortest paths), `exact_solver.py` (the exact study backend).
 offline**:
 
 ```bash
-python cluster/build_table.py      # -> Results/final_per_instance.csv, final_by_size.csv
-                                   #    + the LaTeX per-size rows (Tables 2–3) on stdout
-python cluster/plot_results.py     # -> papers/GVNS/figs/{synthetic,real}_ratios.pdf (Fig. 2)
+python cluster/build_table.py            # -> Results/final_per_instance.csv, final_by_size.csv
+                                         #    + the LaTeX rows of Table 2 on stdout
+python cluster/build_ablation_table.py   # -> Results/components.csv + Table 3 rows
+python cluster/exact_tuning_table.py     # -> Results/exact_tuning.csv (solver-parameter study)
+python cluster/plot_results.py           # -> papers/GVNS/figs/{synthetic,real}_ratios.pdf (Fig. 2)
 python cluster/plot_solution.py --instance Generated_Data/Real_Graph/Germany \
     --solution Results/Real_Graph/Germany \
     --out papers/GVNS/figs/germany_solution.pdf                              # Fig. 1
 ```
 
-`build_table.py` needs only the committed `Results/*.json` and
-`Results/lp_bounds.csv`; the two plotting scripts additionally read the instance
-geometry from `Generated_Data/` (Section 3).
+`build_table.py`, `build_ablation_table.py` and `exact_tuning_table.py` need only
+the committed `Results/*.json` and `Results/lp_bounds.csv`; the two plotting
+scripts additionally read the instance geometry from `Generated_Data/` (Section 3).
+Figures must be copied into `papers/GVNS/arxiv/figs/` by hand, and the arXiv
+source is regenerated from the conference one with
+`python papers/GVNS/sync_arxiv.py` (`--check` fails if the two have drifted).
 
 ---
 
@@ -162,30 +167,53 @@ account `proj_1844` — **edit the `#SBATCH --account`/`--partition` lines in
 `cluster/*.slurm` for your site**, then:
 
 ```bash
-# (1) exact dual bounds + incumbents (SCIP everywhere, HiGHS up to |V|=50)
-python cluster/make_manifest.py --sets synthetic real \
-    --backends scip highs --highs-max-size 50 --out cluster/manifest.csv
+# (1) exact dual bounds + incumbents (both backends on every instance)
+python cluster/make_manifest.py --sets synthetic real --backends scip highs \
+    --highs-max-size 150 \
+    --budget 10:1800,20:3600,30:5400,50:7200,100:10800,150:14400 \
+    --out cluster/manifest.csv
 sbatch --array=1-N%10 cluster/exact_array.slurm cluster/manifest.csv Results/Exact
 
-# (2) multi-seed GVNS (paper uses 3 seeds; budget = 2*|V| minutes)
-python cluster/make_gvns_manifest.py --sets synthetic real --seeds 3 \
+# (2) multi-seed GVNS (paper uses 10 seeds; budget = 2*|V| minutes)
+python cluster/make_gvns_manifest.py --sets synthetic real --seeds 10 \
     --out cluster/gvns_manifest.csv
 sbatch --array=1-M%K cluster/gvns_array.slurm cluster/gvns_manifest.csv Results/GVNS
 
 # (3) closed-form LP reference bounds (fast, no cluster needed)
-python cluster/lp_bounds.py --sets synthetic real --out Results/lp_bounds.csv
+python cluster/lp_bounds_direct.py --sets synthetic real --out Results/lp_bounds.csv
 
-# (4) neighborhood ablation (leave-one-out N1/N2/N3)
+# (4) neighborhood ablation (leave-one-out N1/N2/N3), 5 seeds
 python cluster/make_ablation_manifest.py --group synthetic --sizes 20 30 50 \
-    --out cluster/ablation_manifest.csv
-sbatch --array=1-A%K cluster/gvns_array.slurm cluster/ablation_manifest.csv Results/Ablation
+    --seeds 5 --out cluster/ablation_syn.csv
+python cluster/make_ablation_manifest.py --group real --sizes 16 19 24 28 42 49 \
+    --per-size 1 --seeds 5 --out cluster/ablation_real.csv
+sbatch --array=1-A%K cluster/gvns_array.slurm cluster/ablation_syn.csv  Results/Ablation
+sbatch --array=1-B%K cluster/gvns_array.slurm cluster/ablation_real.csv Results/Ablation_real
+
+# (5) search-scheme baseline: basic ("pure") VNS
+python cluster/make_baseline_manifest.py --group synthetic --sizes 20 30 50 \
+    --variants bvns --seeds 5 --out cluster/baseline_syn.csv
+sbatch --array=1-C%K cluster/gvns_array.slurm cluster/baseline_syn.csv Results/Baselines
+
+# (6) exact-solver parameter sensitivity (non-default presets)
+python cluster/make_manifest.py --sets synthetic real --backends scip \
+    --presets heur emph_feas sepa_aggr --names 30_nodes_1 50_nodes_1 Germany Spain \
+    --out cluster/exact_tune_scip.csv
+sbatch --array=1-D%12 cluster/exact_array.slurm cluster/exact_tune_scip.csv Results/Exact_tuning
 ```
 
-`N`, `M`, `A` are the manifest row counts printed by each `make_*` script; `%K`
-caps concurrent array tasks. `run_one.py` / `run_gvns.py` are idempotent — an
-existing output JSON is skipped, so a partial array can simply be resubmitted.
-`cluster/aggregate.py` gives a per-size summary of the exact solves. Then rebuild
-the tables and figures as in Section 5.
+`N`, `M`, `A`–`D` are the manifest row counts printed by each `make_*` script;
+`%K` caps concurrent array tasks. `run_one.py` / `run_gvns.py` are idempotent — an
+existing output JSON is skipped, so a partial array can simply be resubmitted, and
+extra seeds are added by re-running with a larger `--seeds`. `cluster/aggregate.py`
+gives a per-size summary of the exact solves. Then rebuild the tables and figures
+as in Section 5.
+
+**N3 configuration.** `--n3 sweep` (the default) runs N3 as described in the
+paper, avoiding a prefix of the most congested storages; `--n3 single` reproduces
+the configuration of arXiv v1, in which two arguments of the N3 call were
+transposed so that only the single most congested storage was avoided. Send the
+two configurations to different output directories — the job tags are identical.
 
 ### Generating fresh synthetic instances
 

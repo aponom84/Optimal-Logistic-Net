@@ -1,0 +1,16 @@
+{
+  "instance": "Europe Russia",
+  "group": "real",
+  "size": 90,
+  "seed": 2,
+  "disable": "",
+  "variant": "gvns",
+  "n3": "sweep",
+  "result_price": 22181550.20914285,
+  "init_price": 66338414.95899985,
+  "solving_time": 6679.904526233673,
+  "time_limit": 10800.0,
+  "ok": true,
+  "wall_time": 6680.24,
+  "finished_at": "2026-08-27T07:42:24"
+}

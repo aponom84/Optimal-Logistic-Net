@@ -60,37 +60,60 @@ def main():
     ap.add_argument("--cap", type=float, default=50)
     ap.add_argument("--gap", type=float, default=0.0)
     ap.add_argument("--threads", type=int, default=8)
+    ap.add_argument("--presets", nargs="+", default=["default"],
+                    help="parameter presets to cross with the backends "
+                         "(scip: default heur emph_feas sepa_aggr; "
+                         "highs: default heur presolve_off aggressive)")
+    ap.add_argument("--limit-per-size", type=int, default=None,
+                    help="at most this many instances per size, in name order")
+    ap.add_argument("--names", nargs="*", default=None,
+                    help="restrict to these instance names")
     ap.add_argument("--out", default="cluster/manifest.csv")
     args = ap.parse_args()
 
     budget = parse_budget(args.budget)
+    # the preset is part of the tag only when it is not the default, so manifests
+    # built before the sensitivity study keep producing the same file names
+    def tag_of(grp, name, backend, preset):
+        base = f"{grp}__{name}__{backend}"
+        return base if preset == "default" else f"{base}__{preset}"
+
     rows = []
     for grp in args.sets:
         base = os.path.join(REPO, SET_DIRS[grp])
+        seen_per_size = {}
         for name in sorted(os.listdir(base)):
             folder = os.path.join(base, name)
             if not os.path.isdir(folder):
                 continue
             if not os.path.exists(os.path.join(folder, "offices.csv")):
                 continue
+            if args.names and name not in args.names:
+                continue
             size = storages_of(folder)
             if args.sizes and size not in args.sizes:
                 continue
+            if args.limit_per_size is not None:
+                seen_per_size[size] = seen_per_size.get(size, 0) + 1
+                if seen_per_size[size] > args.limit_per_size:
+                    continue
             tl = budget_for(size, budget)
             for backend in args.backends:
                 if backend == "highs" and size > args.highs_max_size:
                     continue
-                rows.append({
-                    "tag": f"{grp}__{name}__{backend}",
-                    "group": grp, "name": name, "size": size,
-                    "instance_path": os.path.join(SET_DIRS[grp], name),
-                    "backend": backend, "cap": args.cap, "gap": args.gap,
-                    "threads": args.threads, "time_limit": tl,
-                })
+                for preset in args.presets:
+                    rows.append({
+                        "tag": tag_of(grp, name, backend, preset),
+                        "group": grp, "name": name, "size": size,
+                        "instance_path": os.path.join(SET_DIRS[grp], name),
+                        "backend": backend, "cap": args.cap, "gap": args.gap,
+                        "threads": args.threads, "time_limit": tl,
+                        "preset": preset,
+                    })
 
-    rows.sort(key=lambda r: (r["size"], r["group"], r["name"], r["backend"]))
+    rows.sort(key=lambda r: (r["size"], r["group"], r["name"], r["backend"], r["preset"]))
     fields = ["tag", "group", "name", "size", "instance_path", "backend",
-              "cap", "gap", "threads", "time_limit"]
+              "cap", "gap", "threads", "time_limit", "preset"]
     out = os.path.join(REPO, args.out) if not os.path.isabs(args.out) else args.out
     with open(out, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fields)

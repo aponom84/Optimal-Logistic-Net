@@ -1,0 +1,16 @@
+{
+  "instance": "Hungary",
+  "group": "real",
+  "size": 19,
+  "seed": 7,
+  "disable": "",
+  "variant": "gvns",
+  "n3": "single",
+  "result_price": 419793.12940999994,
+  "init_price": 698502.6859999999,
+  "solving_time": 2090.2308506965637,
+  "time_limit": 2280.0,
+  "ok": true,
+  "wall_time": 2090.25,
+  "finished_at": "2026-08-26T15:55:25"
+}

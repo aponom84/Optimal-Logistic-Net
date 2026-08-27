@@ -1,0 +1,16 @@
+{
+  "instance": "United Kingdom",
+  "group": "real",
+  "size": 42,
+  "seed": 2,
+  "disable": "",
+  "variant": "bvns",
+  "n3": "sweep",
+  "result_price": 3094070.7127584075,
+  "init_price": 5913358.537999998,
+  "solving_time": 1016.5364708900452,
+  "time_limit": 5040.0,
+  "ok": true,
+  "wall_time": 1016.62,
+  "finished_at": "2026-08-27T03:18:50"
+}

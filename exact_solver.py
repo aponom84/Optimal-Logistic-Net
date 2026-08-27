@@ -4,6 +4,10 @@ This mirrors the arc-based formulation of ``Solver.SolveMIP_HIGHS_Edge`` -- the
 "exact" baseline in the GVNS paper -- but is built for a rigorous exact study:
 
   * choose the backend: SCIP (via ``pyscipopt``) or HiGHS (via ``highspy``);
+  * choose a parameter ``preset``: ``default`` leaves every solver option at its
+    factory setting (only the time limit, gap target and thread count are set),
+    which is what the paper's main tables use; the other presets exist for the
+    parameter-sensitivity study of Sec. 5.1;
   * run to *proven* optimality (``gap=0``) or under a wall-clock budget;
   * return the primal bound, the **dual (lower) bound**, the MIP gap, the
     solver status, node count and solve time.
@@ -30,17 +34,53 @@ from dataclasses import dataclass, field
 from NetProductPath import NetProducts
 
 ROW_FIELDS = [
-    "instance", "backend", "storages", "edges", "commodities",
+    "instance", "backend", "preset", "storages", "edges", "commodities",
     "n_int_vars", "n_cont_vars", "n_constraints",
     "status", "proven_optimal", "primal_bound", "dual_bound", "gap",
     "solve_time", "nodes", "time_limit", "gap_tol", "threads",
 ]
+
+# Parameter presets for the sensitivity study.  ``default`` is deliberately
+# empty: the main results use factory settings apart from the limits set below.
+SCIP_PRESETS = ("default", "heur", "emph_feas", "sepa_aggr")
+HIGHS_PRESETS = {
+    "default": {},
+    "heur": {"mip_heuristic_effort": 0.5},          # factory default is 0.05
+    "presolve_off": {"presolve": "off"},
+    "aggressive": {"mip_heuristic_effort": 0.5, "presolve": "on", "parallel": "on"},
+}
+
+
+def _apply_scip_preset(m, preset):
+    """Apply a SCIP parameter preset. Called *after* the limits, never before."""
+    if preset in ("", "default"):
+        return
+    from pyscipopt import SCIP_PARAMSETTING, SCIP_PARAMEMPHASIS
+    if preset == "heur":
+        m.setHeuristics(SCIP_PARAMSETTING.AGGRESSIVE)
+    elif preset == "emph_feas":
+        m.setEmphasis(SCIP_PARAMEMPHASIS.FEASIBILITY)
+    elif preset == "sepa_aggr":
+        m.setSeparating(SCIP_PARAMSETTING.AGGRESSIVE)
+    else:
+        raise ValueError(f"unknown SCIP preset {preset!r}; expected {SCIP_PRESETS}")
+
+
+def _apply_highs_preset(h, preset):
+    """Apply a HiGHS parameter preset. Called *after* the limits, never before."""
+    if preset in ("", "default"):
+        return
+    if preset not in HIGHS_PRESETS:
+        raise ValueError(f"unknown HiGHS preset {preset!r}; expected {sorted(HIGHS_PRESETS)}")
+    for option, value in HIGHS_PRESETS[preset].items():
+        h.setOptionValue(option, value)
 
 
 @dataclass
 class ExactResult:
     instance: str = ""
     backend: str = ""
+    preset: str = "default"
     storages: int = 0
     edges: int = 0
     commodities: int = 0
@@ -136,16 +176,17 @@ def _fill_dims(res: ExactResult, net: NetProducts):
     res.n_int_vars = net.edgeCount
 
 
-def _solve_scip(net, time_limit, gap, threads, keep_solution):
+def _solve_scip(net, time_limit, gap, threads, keep_solution, preset="default"):
     m, veh = build_scip_model(net)
     m.setParam("limits/time", float(time_limit))
     m.setParam("limits/gap", float(gap))
     if threads and threads > 1:
         m.setParam("lp/threads", int(threads))  # B&B is sequential; parallel LP only
+    _apply_scip_preset(m, preset)
     m.hideOutput()
     m.optimize()
 
-    r = ExactResult(backend="scip")
+    r = ExactResult(backend="scip", preset=preset)
     r.status = m.getStatus()
     r.proven_optimal = (r.status == "optimal")
     r.solve_time = m.getSolvingTime()
@@ -160,7 +201,7 @@ def _solve_scip(net, time_limit, gap, threads, keep_solution):
     return r
 
 
-def _solve_highs(net, time_limit, gap, threads, keep_solution):
+def _solve_highs(net, time_limit, gap, threads, keep_solution, preset="default"):
     import highspy
 
     m, _ = build_scip_model(net)
@@ -175,11 +216,12 @@ def _solve_highs(net, time_limit, gap, threads, keep_solution):
         h.setOptionValue("mip_rel_gap", float(gap))
         if threads:
             h.setOptionValue("threads", int(threads))
+        _apply_highs_preset(h, preset)
         h.readModel(mps)
         h.run()
 
         info = h.getInfo()
-        r = ExactResult(backend="highs")
+        r = ExactResult(backend="highs", preset=preset)
         try:
             r.status = h.modelStatusToString(h.getModelStatus())
         except Exception:
@@ -199,13 +241,14 @@ def _solve_highs(net, time_limit, gap, threads, keep_solution):
 
 
 def solve_arc(net: NetProducts, backend="scip", time_limit=3600, gap=0.0,
-              threads=1, instance="", keep_solution=True) -> ExactResult:
+              threads=1, instance="", keep_solution=True,
+              preset="default") -> ExactResult:
     """Solve the arc-based MILP with the chosen backend and report bounds."""
     backend = backend.lower()
     if backend == "scip":
-        r = _solve_scip(net, time_limit, gap, threads, keep_solution)
+        r = _solve_scip(net, time_limit, gap, threads, keep_solution, preset)
     elif backend in ("highs", "highspy"):
-        r = _solve_highs(net, time_limit, gap, threads, keep_solution)
+        r = _solve_highs(net, time_limit, gap, threads, keep_solution, preset)
     else:
         raise ValueError(f"unknown backend {backend!r}")
     _fill_dims(r, net)
@@ -217,12 +260,13 @@ def solve_arc(net: NetProducts, backend="scip", time_limit=3600, gap=0.0,
 
 
 def solve_instance(path, cap, backend="scip", time_limit=3600, gap=0.0,
-                   threads=1, keep_solution=True) -> ExactResult:
+                   threads=1, keep_solution=True, preset="default") -> ExactResult:
     folder = path if path.endswith("/") else path + "/"
     net = NetProducts(cap, folder)
     name = os.path.basename(os.path.normpath(path))
     return solve_arc(net, backend=backend, time_limit=time_limit, gap=gap,
-                     threads=threads, instance=name, keep_solution=keep_solution)
+                     threads=threads, instance=name, keep_solution=keep_solution,
+                     preset=preset)
 
 
 def main():
@@ -233,14 +277,17 @@ def main():
     ap.add_argument("--time", type=float, default=600, help="time limit (s)")
     ap.add_argument("--gap", type=float, default=0.0, help="relative MIP gap tolerance")
     ap.add_argument("--threads", type=int, default=1)
+    ap.add_argument("--preset", default="default",
+                    help="parameter preset: default | heur | emph_feas | sepa_aggr "
+                         "(SCIP) / default | heur | presolve_off | aggressive (HiGHS)")
     args = ap.parse_args()
 
     t0 = _time.time()
     r = solve_instance(args.instance, args.cap, backend=args.backend,
                        time_limit=args.time, gap=args.gap, threads=args.threads,
-                       keep_solution=False)
+                       keep_solution=False, preset=args.preset)
     print(f"instance     {r.instance}")
-    print(f"backend      {r.backend}")
+    print(f"backend      {r.backend}  (preset {r.preset})")
     print(f"size         |V|={r.storages}  |E|={r.edges}  |K|={r.commodities}"
           f"  vars(int/cont)={r.n_int_vars}/{r.n_cont_vars}  cons={r.n_constraints}")
     print(f"status       {r.status}  proven_optimal={r.proven_optimal}")

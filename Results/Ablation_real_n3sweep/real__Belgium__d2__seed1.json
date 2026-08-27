@@ -1,0 +1,16 @@
+{
+  "instance": "Belgium",
+  "group": "real",
+  "size": 16,
+  "seed": 1,
+  "disable": "2",
+  "variant": "gvns",
+  "n3": "sweep",
+  "result_price": 209952.33816,
+  "init_price": 295235.3399999998,
+  "solving_time": 533.9842340946198,
+  "time_limit": 1920.0,
+  "ok": true,
+  "wall_time": 534.0,
+  "finished_at": "2026-08-27T10:08:50"
+}

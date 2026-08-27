@@ -1,0 +1,16 @@
+{
+  "instance": "Spain",
+  "group": "real",
+  "size": 59,
+  "seed": 5,
+  "disable": "",
+  "variant": "gvns",
+  "n3": "sweep",
+  "result_price": 4540772.640500001,
+  "init_price": 9911575.026999997,
+  "solving_time": 4670.724885225296,
+  "time_limit": 7080.0,
+  "ok": true,
+  "wall_time": 4670.87,
+  "finished_at": "2026-08-27T06:36:20"
+}

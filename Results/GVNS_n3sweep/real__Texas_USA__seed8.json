@@ -1,0 +1,16 @@
+{
+  "instance": "Texas_USA",
+  "group": "real",
+  "size": 58,
+  "seed": 8,
+  "disable": "",
+  "variant": "gvns",
+  "n3": "sweep",
+  "result_price": 6027017.509980003,
+  "init_price": 11956660.147000015,
+  "solving_time": 3811.5664286613464,
+  "time_limit": 6960.0,
+  "ok": true,
+  "wall_time": 3811.71,
+  "finished_at": "2026-08-27T06:09:58"
+}

@@ -1,0 +1,16 @@
+{
+  "instance": "Illinois_USA",
+  "group": "real",
+  "size": 28,
+  "seed": 3,
+  "disable": "2",
+  "variant": "gvns",
+  "n3": "sweep",
+  "result_price": 689670.8511400002,
+  "init_price": 1392708.9630000005,
+  "solving_time": 604.6413016319275,
+  "time_limit": 3360.0,
+  "ok": true,
+  "wall_time": 604.68,
+  "finished_at": "2026-08-27T11:19:35"
+}

@@ -1,0 +1,16 @@
+{
+  "instance": "Sweden",
+  "group": "real",
+  "size": 45,
+  "seed": 6,
+  "disable": "",
+  "variant": "gvns",
+  "n3": "sweep",
+  "result_price": 5379360.848273716,
+  "init_price": 10691648.241000006,
+  "solving_time": 3728.976675748825,
+  "time_limit": 5400.0,
+  "ok": true,
+  "wall_time": 3729.07,
+  "finished_at": "2026-08-27T04:51:51"
+}

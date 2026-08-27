@@ -78,29 +78,25 @@ Laboratory of Algorithms and Technologies for Network Analysis, HSE University, 
 
 \begin{abstract}
 We study the problem of routing multiple commodities through a logistic
-transport network so as to minimise the joint cost of vehicle movements and
-of transshipment (reload) operations at intermediate storages. The problem
-combines two features that are common in practice but rarely treated
-together: edge costs that are \emph{nonlinear} in the transported volume,
-because freight is carried by vehicles of fixed capacity, and \emph{hard
-upper bounds} on the volume that can be reloaded at each node. We formulate
-the problem as a mixed integer linear program in both an arc-based and a
-path-based form, derive its linear relaxation, and propose a metaheuristic
-solver based on General Variable Neighborhood Search (GVNS). The method works
-in the path space and relies on three problem-specific neighborhoods that
-generate new candidate paths by (i)~shortest paths under a reload-aware
-metric, (ii)~edges carrying partially loaded vehicles, and (iii)~detours
-around congested storages. We evaluate the method on our open
-benchmark~\cite{benchmark} for this problem: a corpus of realistic logistic
-networks calibrated on real road graphs of nine European countries, five U.S.\
-states and the European part of Russia, with near-planar topology
-(Zipf city sizes, a spatial-network budget model, and a doubly constrained
-gravity demand model). On 35 synthetic and 15 real-geometry instances with up
-to 150 storages, GVNS returns solutions within about one percent of the best
-dual bound on small networks---a branch-and-bound lower bound substantially
-tighter than the LP relaxation---is stable across random seeds, and for a
-comparable wall-clock budget is up to $55\%$ better than a time-limited exact
-solver on the medium instances.
+transport network so as to minimise the joint cost of vehicle movements and of
+transshipment (reload) operations at intermediate storages. The problem combines
+two features common in practice but rarely treated together: edge costs that are
+\emph{nonlinear} in the transported volume, because freight is carried by
+vehicles of fixed capacity, and \emph{hard upper bounds} on the volume that can
+be reloaded at each node. We formulate it as a mixed integer linear program in
+both an arc-based and a path-based form, derive its linear relaxation, and
+propose a solver based on General Variable Neighborhood Search (GVNS). The method
+works in the path space and relies on three problem-specific neighborhoods that
+generate candidate paths by (i)~shortest paths under a reload-aware metric,
+(ii)~edges carrying partially loaded vehicles, and (iii)~detours around congested
+storages. We evaluate it on our open benchmark~\cite{benchmark}: realistic
+logistic networks calibrated on real road graphs of nine European countries, five
+U.S.\ states and the European part of Russia. On 35 synthetic and 15
+real-geometry instances with up to 150 storages, GVNS returns solutions within
+about one percent of the best dual bound on small networks---a branch-and-bound
+lower bound substantially tighter than the LP relaxation---is stable across
+random seeds, and for a comparable wall-clock budget is up to $55\%$ better than
+a time-limited exact solver on the medium instances.
 
 \keywords{multi-commodity flow \and network design \and variable neighborhood
 search \and metaheuristics \and mixed integer programming \and logistics}
@@ -108,98 +104,93 @@ search \and metaheuristics \and mixed integer programming \and logistics}
 
 \section{Introduction}
 
-Organising commodity flows between distribution centres is one of the central
-problems of logistic networks. The growth in scale and complexity of modern
-warehousing structures creates a persistent demand for efficient algorithms
-that build optimal transportation plans. Two characteristics make realistic
-instances hard. First, the cost of using a road is \emph{nonlinear} in the
-volume transported along it: goods travel in vehicles of fixed capacity, so
-the relevant quantity is the integer \emph{number of vehicles}, obtained by
-rounding the carried volume up to the capacity. Second, every storage has a
-limited \emph{transshipment capacity}---an upper bound on the total volume
-that may be unloaded, stored and reloaded there. Together these features turn
-an otherwise classical multi-commodity flow problem into a mixed integer
-program whose feasible region is shaped by node capacities and whose
-objective contains a step-wise vehicle term.
+Organising commodity flows between distribution centres is a central problem of
+logistic networks, and the scale of modern warehousing keeps demand for efficient
+planning algorithms high. Two features make realistic instances hard. First, the
+cost of using a road is \emph{nonlinear} in the volume carried: goods travel in
+vehicles of fixed capacity, so the billed quantity is the integer \emph{number of
+vehicles}, obtained by rounding the volume up to that capacity. Second, every
+storage has a limited \emph{transshipment capacity}---an upper bound on the volume
+that may be unloaded, stored and reloaded there. Together they turn an otherwise
+classical multi-commodity flow problem into a mixed integer program with node
+capacities and a step-wise vehicle cost term.
 
-Exact methods for multi-commodity flow problems are computationally expensive
-because the problem is NP-hard. Column generation~\cite{barnhart1998} is a
-classical approach that solves path-based formulations by dynamically building
-a set of promising paths, and is frequently combined with branch-and-price. In
-practice, heuristics and metaheuristics---greedy algorithms, genetic
-algorithms, tabu search, simulated annealing and local-search-based
-methods---are widely used to obtain good solutions in acceptable
-time~\cite{crainic2015}. Among them, Variable Neighborhood Search (VNS) and
-its variants have proven effective across a broad range of optimisation
-problems. Masri et al.~\cite{masri2015} applied a multi-start VNS to the
-single-path multi-commodity flow problem, and General VNS has performed well
-on the capacitated vehicle routing problem and other flow-constrained logistic
-problems~\cite{amous2017}. Closer to the present setting, problem-specific
-heuristics have proven effective on real-life logistic routing problems, such as
-the truck-and-trailer routing problem with time windows and split
+\paragraph{Related work.} The problem belongs to the family of capacitated
+multi-commodity network design (MCND)~\cite{gendron1999,crainic2000}, which is
+NP-hard. Exact approaches solve path-based formulations by column generation and
+branch-and-price~\cite{barnhart1998}; at practical scale heuristics dominate,
+notably cycle-based neighbourhoods inside tabu search~\cite{ghamlouche2003},
+local branching~\cite{rodriguez2010} and matheuristics that call a MILP solver on
+restricted subproblems~\cite{hewitt2010}. Metaheuristics for multi-commodity flow
+more broadly are surveyed in~\cite{crainic2021}. Cost functions of the kind
+studied here appear as \emph{step} or discrete costs: Gabrel et
+al.~\cite{gabrel1999} give an exact Benders-type procedure for general step
+costs, and Croxton et al.~\cite{croxton2003} compare MILP models of nonconvex
+piecewise-linear costs. Capacity on the \emph{node} side is instead typical of
+hub location, where hub throughput is bounded~\cite{alumur2008}. Variable
+Neighborhood Search~\cite{mladenovic1997,hansen2019,hansen2017} has proven
+effective across a broad range of optimisation problems: Masri et
+al.~\cite{masri2015} applied a multi-start VNS to the single-path
+multi-commodity flow problem, General VNS performs well on capacitated vehicle
+routing and other flow-constrained logistic problems~\cite{amous2017}, and
+problem-specific heuristics do well on real-life logistic routing, such as the
+truck-and-trailer routing problem with time windows and split
 deliveries~\cite{batsyn2014ttrp,batsyn2015heuristic}.
 
-\paragraph{Contributions.} The aim of this work is the development and study
-of a metaheuristic algorithm, based on General Variable Neighborhood Search
-(GVNS), for distributing commodity flows in a logistic network with nonlinear
-edge costs and limited storage capacities. Specifically, we
-\begin{enumerate}[leftmargin=1.4em,itemsep=1pt,topsep=2pt]
-\item formalise the problem and give equivalent arc-based and path-based MILP
-      models together with their linear relaxation (Section~\ref{sec:model});
-\item design a GVNS that searches in the space of commodity paths and is
-      equipped with three problem-specific neighborhoods that exploit reload
-      costs, partial vehicle loads and storage congestion
-      (Section~\ref{sec:gvns});
-\item report a computational study on our open benchmark~\cite{benchmark}
-      (Section~\ref{sec:data}), comparing GVNS
-      against the LP relaxation, its rounded version, and MIP dual bounds and
-      incumbents from an exact solver
-      (Section~\ref{sec:experiments}).
-\end{enumerate}
-The main methodological elements are the specialised GVNS neighborhoods adapted
-to the path-based formulation and its constraints, together with the
-exact-solver study that quantifies the quality of the resulting solutions.
+No public solver or benchmark exists for the variant studied here: published MCND
+codes charge a \emph{fixed} cost per open arc rather than a per-vehicle step cost,
+and none of them bounds the volume transshipped at a node, so a head-to-head
+comparison would be between different problems. We therefore evaluate against what
+is comparable on the identical model---two state-of-the-art general MILP solvers,
+the valid dual bounds their branch-and-bound produces, and simpler VNS schemes
+built from our own code---and release the benchmark so that future methods can be
+compared directly.
+
+\paragraph{Contributions.} We formalise the problem and give equivalent arc-based
+and path-based MILP models with their linear relaxation
+(Section~\ref{sec:model}); we design a GVNS that searches the space of commodity
+paths through three problem-specific neighborhoods, which exploit reload costs,
+partial vehicle loads and storage congestion (Section~\ref{sec:gvns}); and we
+report a computational study on our open benchmark~\cite{benchmark}
+(Section~\ref{sec:data}) comparing GVNS against the LP relaxation, its rounded
+version, and the dual bounds and incumbents of an exact solver
+(Section~\ref{sec:experiments}), together with a component analysis that isolates
+the contribution of each neighborhood and of the VND itself.
 
 \section{Problem statement and model}
 \label{sec:model}
 
-\subsection{Verbal statement}
-We are given a transport network of storages connected by roads. Prescribed
-volumes of goods must be moved from origins to destinations so as to minimise
-the total cost of moving vehicles along roads plus the cost of transshipment
-(unloading, storing and reloading) at intermediate transit storages. Each
-storage has a limited transshipment capacity and a per-unit reload cost.
-Freight travels in vehicles of fixed capacity, and each road has a cost per
-vehicle pass; the number of vehicles on a road must be sufficient to carry the
-total volume routed through it. The problem belongs to the class of
-multi-commodity flow problems with additional node-capacity constraints and a
-vehicle-induced nonlinear edge cost, and admits two equivalent formulations:
-arc-based and path-based.
+\subsection{Problem description}
+Consider a directed graph $G=(\Vv,\E)$ whose nodes are storages and whose edges
+are roads. Each storage $v\in \Vv$ has a per-unit reload cost $f_v\in\Real_+$ and
+a hard \emph{transshipment capacity} $W_v\in\Real_+$, the largest volume that may
+be unloaded, stored and reloaded there; each edge $e\in \E$ has a per-vehicle
+traversal cost $c_e\in\Real_+$. Freight moves in vehicles of capacity
+$C\in\Real_+$, so what an edge actually costs is set by the \emph{integer} number
+of vehicles it carries. We are given a set $K$ of transportation requests
+(commodities); request $k\in K$ must ship a demand $d_k\in\Real_+$ from an origin
+$s_k\in \Vv$ to a destination $t_k\in \Vv$.
 
-\subsection{Data}
-The road network is a directed graph $G=(\Vv,\E)$, where $\Vv$ is the set of
-storages and $\E$ the set of roads. We are given a set of transportation
-requests (commodities) $K$; for each $k\in K$ we know an origin $s_k\in \Vv$,
-a destination $t_k\in \Vv$, and a demand $d_k\in\Real_+$ to be shipped from
-$s_k$ to $t_k$. For each storage $v\in \Vv$ we know the per-unit reload cost
-$f_v\in\Real_+$ and the maximum admissible transshipment volume
-$W_v\in\Real_+$. Each edge $e\in \E$ has a per-vehicle traversal cost
-$c_e\in\Real_+$. Finally, $C\in\Real_+$ is the capacity of one vehicle.
+The problem is to route all requests so as to minimise the total vehicle movement
+cost plus the total transit reload cost, subject to demand satisfaction, edge
+vehicle capacities and node transshipment capacities. It is thus a capacitated
+multi-commodity network design problem with step edge costs and node
+transshipment capacities, and it admits two equivalent formulations, arc-based
+and path-based, given next. Capacities and costs are treated as constants; on
+real networks they vary with the time of day, a point we return to in
+Section~\ref{sec:concl}.
 
-\subsection{Decision variables}
-\textit{Arc-based formulation.} Let $x^k_e\in\Real_+$ be the flow of commodity
-$k\in K$ on edge $e\in \E$ and $y_e\in\Int_+$ the number of vehicles traversing
-$e$. The model has $|K|\cdot|\E|+|\E|$ variables.
+\subsection{Mathematical model}
+\textbf{Decision variables.} \emph{Arc-based:} let $x^k_e\in\Real_+$ be the flow
+of commodity $k\in K$ on edge $e\in \E$ and $y_e\in\Int_+$ the number of vehicles
+traversing $e$; the model has $|K|\cdot|\E|+|\E|$ variables. \emph{Path-based:}
+let $\Pi_k$ be the set of all paths from $s_k$ to $t_k$, let $x^k_p\in\Real_+$ be
+the flow of commodity $k$ on path $p\in\Pi_k$, and $y_e\in\Int_+$ as above; the
+model has $\sum_{k\in K}|\Pi_k|+|\E|$ variables.
 
-\textit{Path-based formulation.} Let $\Pi_k$ be the set of all paths from $s_k$
-to $t_k$. Let $x^k_p\in\Real_+$ be the flow of commodity $k$ on path
-$p\in\Pi_k$, and $y_e\in\Int_+$ as above. The model has
-$\sum_{k\in K}|\Pi_k|+|\E|$ variables.
-
-\subsection{Objective}
-Denote by $\delta^-(v)\subseteq \E$ and $\delta^+(v)\subseteq \E$ the sets of
-edges entering and leaving $v$. The objective minimises the sum of vehicle
-movement cost (first term) and transit reload cost (second term).
+\smallskip\noindent\textbf{Objective.} With $\delta^-(v)\subseteq \E$ and
+$\delta^+(v)\subseteq \E$ the sets of edges entering and leaving $v$, minimise
+vehicle movement cost (first term) plus transit reload cost (second term).
 
 \noindent\emph{Arc-based:}
 \begin{equation}
@@ -217,8 +208,7 @@ movement cost (first term) and transit reload cost (second term).
 \label{eq:obj-path}
 \end{equation}
 
-\subsection{Constraints}
-\textbf{(1) Demand satisfaction.}
+\smallskip\noindent\textbf{Constraints.} \emph{(1) Demand satisfaction.}
 \begin{align}
 \text{arc:}\quad
 &\sum_{e\in\delta^+(v)} x^k_e-\sum_{e\in\delta^-(v)} x^k_e=
@@ -230,8 +220,8 @@ movement cost (first term) and transit reload cost (second term).
 \label{eq:demand-path}
 \end{align}
 
-\textbf{(2) Vehicle capacity on edges.} Enough vehicles must run on each edge
-to carry the total flow:
+\noindent\emph{(2) Vehicle capacity on edges.} Enough vehicles must run on each
+edge to carry the total flow:
 \begin{align}
 \text{arc:}\quad &\sum_{k\in K} x^k_e\le C\,y_e, \qquad \forall e\in \E;
 \label{eq:cap-arc}\\
@@ -240,7 +230,7 @@ to carry the total flow:
 \label{eq:cap-path}
 \end{align}
 
-\textbf{(3) Storage transshipment capacity.}
+\noindent\emph{(3) Storage transshipment capacity.}
 \begin{align}
 \text{arc:}\quad
 &\sum_{\substack{k\in K\\ v\neq s_k,\,v\neq t_k}}\sum_{e\in\delta^-(v)} x^k_e
@@ -252,13 +242,12 @@ to carry the total flow:
 \label{eq:node-path}
 \end{align}
 
-\subsection{Classification and linear relaxation}
+\subsection{Complexity and linear relaxation}
 \label{sec:relax}
-The objective and all constraints are linear, and the variables are mixed:
-the vehicle counts $y_e$ are integer while the flows $x^k_e$ (or $x^k_p$) are
-continuous. The problem is therefore a \emph{mixed integer linear program}
-(MILP), an NP-hard class for which no polynomial-time exact algorithm is known
-in general.
+The objective and all constraints are linear and the variables are mixed---the
+vehicle counts $y_e$ are integer while the flows $x^k_e$ (or $x^k_p$) are
+continuous---so the problem is a \emph{mixed integer linear program} (MILP), an
+NP-hard class for which no polynomial-time exact algorithm is known in general.
 
 A standard way to bound the optimum is the LP relaxation: dropping the
 integrality of $y_e$ turns the MILP into a linear program solvable in
@@ -309,7 +298,9 @@ between an origin and a destination.
 To avoid this, the graph is \emph{completed}: for every pair of storages
 $v,u$ we add (or update) an edge whose cost equals that of the shortest path
 from $v$ to $u$ in $G$. Each edge of the resulting complete graph thus
-represents the cheapest stop-free route between its endpoints. This guarantees
+represents the cheapest stop-free route between its endpoints, and $c_{vu}$
+denotes its per-vehicle cost. From here on $G=(\Vv,\E)$ denotes this completed
+graph, so every later formula ranges over all ordered pairs of storages. This guarantees
 the existence of a feasible solution, because flow routed on the direct
 origin--destination edge does not pass through any transit node and hence
 violates no node-capacity constraint. From the relaxed objective
@@ -343,22 +334,19 @@ moving one unit of commodity, including reloads at the endpoints:
 \begin{equation}
 c'_{vu}=f_v+f_u+\frac{c_{vu}}{C}, \qquad \forall (v,u)\in \E .
 \end{equation}
-Before GVNS starts, a pool of shortest paths under $c'$ is precomputed for
-each commodity; new paths are then drawn from this pool, either at random or
-preferring low-cost paths. The neighborhood parameters are the number of new
-paths per commodity and a boolean choosing the selection strategy. During VND
-all combinations are swept (one to three new paths, both strategies); in Shake,
-five random paths are always added, which helps escape local optima.
+Before GVNS starts, a pool of shortest paths under $c'$ is precomputed for each
+commodity; new paths are then drawn from it, either at random or preferring
+low-cost paths. During VND all combinations of the two parameters---the number of
+new paths per commodity and the selection strategy---are swept (one to three
+paths, both strategies); in Shake, five random paths are always added, which helps
+escape local optima.
 
 \paragraph{N2 -- Partially loaded edges.}
 A partially loaded vehicle has spare room: routing extra flow over such an edge
 can free another vehicle and reduce the vehicle count. For every edge we
 compute the residual load
-\begin{equation}
-load_e=\Big(\sum_{k\in K}\sum_{p\in\Pi_k:\,e\in p} x^k_p\Big) \bmod C,
-\qquad \forall e\in \E,
-\end{equation}
-and build a graph $G''$ that favours edges with free capacity. Fully loaded
+$load_e=\big(\sum_{k\in K}\sum_{p\in\Pi_k:\,e\in p} x^k_p\big) \bmod C$ for every
+$e\in \E$, and build a graph $G''$ that favours edges with free capacity. Fully loaded
 edges ($load_e=0$) are least attractive, since new flow would require an extra
 vehicle, and keep their weight from $G'$. The remaining edges receive
 \begin{equation}
@@ -366,47 +354,39 @@ c''_{vu}=f_v+f_u+\frac{load_{vu}}{C}\Big(\frac{c_{vu}}{C}\Big)^{\!\alpha},
 \qquad \alpha\le 1,
 \end{equation}
 so that smaller residual load (more free room) lowers the weight and raises
-priority; $\alpha$ tunes how strongly travel cost influences the weight.
-Shortest-path search on $G''$ then tends to build paths through
-partially loaded vehicles. The number of new paths is set dynamically: a
-counter of fully loaded paths and an accumulator of total free room stop
-generation once a threshold is reached (in VND, at most two fully loaded paths
-or total free room exceeding one vehicle capacity; in Shake, three paths and
-$3C$).
+priority; $\alpha$ tunes how strongly travel cost influences the weight, and
+shortest-path search on $G''$ then tends to build paths through partially loaded
+vehicles. The number of new paths is set dynamically: a counter of fully loaded
+paths and an accumulator of total free room stop generation once a threshold is
+reached (in VND, at most two fully loaded paths or free room above one vehicle
+capacity; in Shake, three paths and $5C$).
 
 \paragraph{N3 -- Detours around congested storages.}
 Storages whose transshipment volume is at or near their capacity are
 bottlenecks, and routing around them is desirable. For the current solution we
-compute a congestion ratio
-\begin{equation}
-overload_v=\frac1{W_v}\sum_{\substack{k\in K\\ v\neq s_k,\,v\neq t_k}}
-\sum_{p\in\Pi_k}\sum_{v\in p} x^k_p, \qquad \forall v\in \Vv .
-\end{equation}
-Storages are sorted by decreasing $overload_v$, and a subset of the most
-congested ones is selected according to a threshold (and trimmed or padded to a
-target size). For each prefix $\{v_1,\dots,v_i\}$ of the ordered set, those
-nodes (except the commodity's own origin and destination) are deleted from
-$G'$ and a shortest path is recomputed, yielding detours that bypass the
-busiest nodes and shift flow to less loaded ones. In VND the subset size ranges
-from $|\Vv|/5$ to $|\Vv|/4$, with threshold $0.75$ and one path per
-configuration; in Shake the range widens to $|\Vv|/4$--$|\Vv|/3$, the threshold
-drops to $0.5$ and three paths are generated per configuration.
+compute, for every $v\in \Vv$, a congestion ratio
+$overload_v=\frac1{W_v}\sum_{k\in K,\,v\neq s_k,t_k}\sum_{p\in\Pi_k}\sum_{v\in p}
+x^k_p$. Storages are sorted by decreasing $overload_v$ and the single most
+congested one is deleted from $G'$ (except where it is the commodity's own origin
+or destination); a shortest path is then recomputed, yielding detours that bypass
+the busiest node and shift flow to less loaded ones. One new path per commodity is
+generated in VND and three in Shake. The natural generalisation---removing a whole
+prefix of $|\Vv|/5$--$|\Vv|/4$ congested storages---was also tried: over all $50$
+instances and ten seeds it is indistinguishable from the single-node rule ($44$ of
+$50$ instances within across-seed noise) yet forfeits $N_3$'s benefit on the
+capacity-tight networks, so we keep the surgical version.
 
 \begin{algorithm}[t]
 \DontPrintSemicolon
 \Fn{\PN{$P,\ x,\ z,\ N,\ \mathit{div},\ \tau$}}{
-  \tcp{incumbent path pool $P$, flows $x$, objective $z=f(x)$; updated in place}
-  $Q \gets \bigcup_{k \in K}{}$ \GenPaths{$N,\ k,\ \mathit{div}$}\tcp*{candidate paths; $N$ selects the rule}
+  \tcp{path pool $P$, flows $x$, objective $z=f(x)$; all updated in place}
+  $Q \gets \bigcup_{k \in K}{}$ \GenPaths{$N,\ k,\ \mathit{div}$}\tcp*{candidates; $N$ selects the rule}
   \lIf{$Q = \emptyset$}{\Return \textbf{false}}
-  $(x',\ z') \gets{}$ \SolveMILP{$P \cup Q,\ x,\ \tau$}\tcp*{redistribute flow; warm start $x$, limit $\tau$}
-  \eIf{$z' < z$}{
-    $P \gets P \cup \{\, p \in Q : x'_p > 0 \,\}$;\ \ $x \gets x'$;\ \ $z \gets z'$\;
-    prune from $P$ every path carrying zero flow\tcp*{keep the model bounded}
-    \Return \textbf{true}
-  }{
-    discard $Q$\;
-    \Return \textbf{false}
-  }
+  $(x',\ z') \gets{}$ \SolveMILP{$P \cup Q,\ x,\ \tau$}\tcp*{redistribute; warm start $x$, limit $\tau$}
+  \lIf{$z' \ge z$}{discard $Q$; \Return \textbf{false}}
+  $P \gets P \cup \{\, p \in Q : x'_p > 0 \,\}$;\ \ $x \gets x'$;\ \ $z \gets z'$\;
+  prune from $P$ every path carrying zero flow\tcp*{keep the model bounded}
+  \Return \textbf{true}
 }
 \caption{\texttt{ProcessNeighborhood}: enlarge the path pool, re-optimise the
 flows by MILP, and keep the move iff it improves the objective.}
@@ -437,22 +417,16 @@ $k \gets 1$\;
 \end{algorithm}
 
 \subsection{Overall algorithm}
-The method is given by Algorithms~\ref{alg:pn} and~\ref{alg:gvns}.
-Algorithm~\ref{alg:pn} is the primitive shared by the three neighborhoods: it
-generates a set of candidate paths---the only step that differs between $N_1$,
-$N_2$ and $N_3$, via \GenPaths---enlarges the path pool, re-optimises the
-commodity flows with the path-based MILP of Section~\ref{sec:model}, warm-started
-from the current solution, and, \emph{only} if the objective improves, commits
-the new paths that carry flow while pruning those that do not, which keeps the
-model bounded. Algorithm~\ref{alg:gvns} embeds this primitive in the GVNS
-template: starting from the rounded-LP solution of Eq.~\eqref{eq:init}, each round
-shakes with the current neighborhood---diversified parameters and a larger MILP
-budget $\tau_{\mathrm{shk}}$---and then runs the VND sweep
-$N_1\!\to\!N_2\!\to\!N_3$ with a smaller budget $\tau_{\mathrm{vnd}}$, since VND
-explores a narrower region. The neighborhood index resets on improvement and
-advances otherwise; a global limit $t_{\max}$ bounds the run, and the search
-stops once a full sweep brings no improvement.
-
+Algorithm~\ref{alg:pn} is the primitive shared by the three neighborhoods; only
+its candidate-generation step, \GenPaths, differs between $N_1$, $N_2$ and $N_3$.
+Algorithm~\ref{alg:gvns} embeds it in the GVNS template: starting from the
+rounded-LP solution of Eq.~\eqref{eq:init}, each round shakes with the current
+neighborhood---diversified parameters and a larger MILP budget
+$\tau_{\mathrm{shk}}$---and then runs the VND sweep $N_1\!\to\!N_2\!\to\!N_3$ with
+a smaller budget $\tau_{\mathrm{vnd}}$, since VND explores a narrower region. The
+neighborhood index resets on improvement and advances otherwise; a global limit
+$t_{\max}$ bounds the run, and the search stops once a full sweep brings no
+improvement.
 
 
 \section{Benchmark instances}
@@ -480,15 +454,17 @@ parameters.
 \label{sec:experiments}
 
 \subsection{Setup, baselines and metric}
-All experiments were run on the HPC cluster ``cHARISMa''~\cite{charisma} (nodes with two
-AMD~EPYC CPUs, 44~cores and $\ge$720\,GB RAM per node, Rocky~Linux~9). Each job
-was pinned to eight cores. The exact models were solved with
-HiGHS~1.14.0~\cite{highs} and, as an independent cross-check of the lower
-bounds, with SCIP~10.0.2~\cite{scip}; the metaheuristic uses HiGHS as its
-in-loop redistribution solver, as before. GVNS is stochastic (random path
-choices in the shake step), so every instance was solved with three independent
+All experiments were run on the HPC cluster ``cHARISMa''~\cite{charisma} (nodes
+with two AMD~EPYC CPUs, 44~cores and $\ge$720\,GB RAM, Rocky~Linux~9), each job
+pinned to eight cores. The exact models were solved with HiGHS~1.14.0~\cite{highs}
+and, as an independent cross-check of the lower bounds, with
+SCIP~10.0.2~\cite{scip}; HiGHS is also the metaheuristic's in-loop redistribution
+solver. GVNS is stochastic (random path
+choices in the shake step), so every instance was solved with ten independent
 random seeds and we report the best objective together with its across-seed
-mean and standard deviation. Unless stated otherwise the exact solves were run
+mean and standard deviation; the component studies of
+Section~\ref{sec:ablation}, which compare variants rather than establish the
+headline numbers, use five seeds each. Unless stated otherwise the exact solves were run
 to a target MIP gap of zero (i.e.\ to optimality where possible) under
 a size-dependent wall-clock budget (30~min for $|V|=10$, growing to 4~h for
 $|V|=150$); GVNS is run with a time limit of twice the number of storages, in
@@ -496,59 +472,57 @@ minutes. The two budgets are comparable---at $|V|=50$, for example, GVNS is
 allowed $100$~min against the exact solver's $2$~h, and at $|V|=10$ it is
 $20$~min against $30$~min.
 
-The main algorithm settings are collected in Table~\ref{tab:params}. The size of
-the arc-based MIP grows steeply with $|V|$---from about $6\,000$ variables at
-$|V|=10$ (edges $|E|=90$, commodities $|K|=67$) to $3.7\times10^{8}$ at $|V|=150$
-($|E|=22\,350$, $|K|=16\,762$)---which is why the exact model becomes intractable
-well before that size while GVNS, working in the much smaller path space, remains
-applicable throughout. A GVNS run took, on average, from about $640$~s at
-$|V|=10$ to $3.7\times10^{3}$~s at $|V|=50$ and $1.8\times10^{4}$~s at $|V|=150$.
+The main settings are collected in Table~\ref{tab:params}. The arc-based MIP
+grows steeply with $|V|$---from about $6\,000$ variables at $|V|=10$ ($|E|=90$,
+$|K|=67$) to $3.7\times10^{8}$ at $|V|=150$ ($|E|=22\,350$, $|K|=16\,762$)---which
+is why it becomes intractable well before that size, while GVNS, working in the
+much smaller path space, remains applicable throughout.
 
 \begin{table}[t]
 \centering
-\caption{Main GVNS and exact-solver settings. VND/Shake values are given as
-VND\,/\,Shake where they differ.}
+\caption{GVNS and exact-solver settings. Values that differ between the VND and
+the Shake step are given as VND\,/\,Shake.}
 \label{tab:params}
 \small
-\begin{tabular}{ll}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{ll@{\qquad}ll}
 \toprule
-Setting & Value\\
+Setting & Value & Setting & Value\\
 \midrule
-Neighborhoods $k_{\max}$ & $3$ ($N_1,N_2,N_3$)\\
-GVNS time limit & $2|V|$ minutes\\
-Random seeds & $3$\\
-Vehicle capacity $C$ & $50$\\
-$N_1$ new paths per commodity (VND\,/\,Shake) & $1$--$3$\,/\,$5$\\
-$N_2$ travel-cost exponent $\alpha$ & $0.5$\\
-$N_2$ free-room stop (VND\,/\,Shake) & $1C$\,/\,$3C$\\
-$N_3$ congestion threshold (VND\,/\,Shake) & $0.75$\,/\,$0.5$\\
-$N_3$ storage-subset size (VND\,/\,Shake) & $|V|/5$--$|V|/4$\,/\,$|V|/4$--$|V|/3$\\
-Exact-solver MIP-gap target & $0$\\
-Exact-solver budget & $30$~min ($|V|{=}10$) \dots\ $4$~h ($|V|{=}150$)\\
+Neighborhoods $k_{\max}$ & $3$ ($N_1,N_2,N_3$)
+  & $N_2$ travel-cost exponent $\alpha$ & $0.5$\\
+GVNS time limit $t_{\max}$ & $2|V|$ min
+  & $N_2$ free-room stop & $1C$\,/\,$5C$\\
+Random seeds & $10$\,/\,$5$
+  & $N_3$ storages removed & $1$ (most congested)\\
+Vehicle capacity $C$ & $50$
+  & $N_1$ shortest-path pool & $20$ paths/commodity\\
+$N_1$ new paths per commodity & $1$--$3$\,/\,$5$
+  & $N_3$ new paths per commodity & $1$\,/\,$3$\\
+Initial-solution MILP limit & $300$~s
+  & Exact-solver MIP-gap target & $0$\\
+Redistribution MILP gap & $1\%$
+  & Exact-solver budget & $30$~min\,\dots\,$4$~h\\
+$\tau_{\mathrm{shk}}$ ($N_1$\,/\,$N_2,N_3$) & $10{+}|V|$\,/\,$100{+}2|V|$~s
+  & $\tau_{\mathrm{vnd}}$ ($N_1$\,/\,$N_2,N_3$) & $25$\,/\,$70$~s\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Lacking known optima, we compare GVNS against four references:
-\begin{itemize}[leftmargin=1.4em,itemsep=1pt,topsep=2pt]
-\item \textbf{LP relaxation} -- the optimum of the relaxed problem
-      (Section~\ref{sec:relax}); a \emph{lower bound}. On the completed graph it
-      is attained by routing every commodity along its direct edge
-      (Section~\ref{sec:gvns}), so it has a closed form and is available at every
-      size, though---ignoring vehicle integrality---it is loose;
-\item \textbf{Rounded LP} -- the relaxed solution with $y_e$ rounded up; this is
-      the GVNS starting solution and a valid \emph{upper bound};
-\item \textbf{MIP dual bound} -- the best lower bound proved by the exact
-      branch-and-bound solver within its budget, i.e.\ the global lower bound of
-      the search tree: the LP relaxation strengthened by branching and cutting
-      planes, which rises towards the optimum as the tree is explored. It is thus
-      a \emph{valid} lower bound ($\underline{z}\le z^{\ast}$) that---unlike the
-      root LP relaxation, which ignores vehicle integrality---is typically tight
-      (within a few percent of the optimum); it is the key reference, letting us
-      bound the true optimum even when optimality is not proved;
-\item \textbf{MIP incumbent} -- the best feasible solution the exact solver
-      returns within a budget comparable to the GVNS run time.
-\end{itemize}
+Lacking known optima, we compare GVNS against four references. The \emph{LP
+relaxation} (Section~\ref{sec:relax}) is a lower bound; on the completed graph it
+is attained by routing every commodity along its direct edge
+(Section~\ref{sec:gvns}), so it is available in closed form at every size, but
+ignoring vehicle integrality makes it loose. The \emph{rounded LP}---the relaxed
+solution with $y_e$ rounded up---is the GVNS starting solution and a valid upper
+bound. The \emph{MIP dual bound} is the global lower bound of the exact solver's
+search tree, i.e.\ the LP relaxation strengthened by branching and cutting planes,
+which rises towards the optimum as the tree is explored; it is a valid lower bound
+($\underline{z}\le z^{\ast}$) that, unlike the root relaxation, is typically tight
+(within a few percent of the incumbent), and it is our key reference because it
+bounds the true optimum even when optimality is not proved. Finally, the \emph{MIP
+incumbent} is the best feasible solution the exact solver returns within a budget
+comparable to the GVNS run time.
 
 Because the true optimum is generally not available, the primary quality
 measure we report is the \emph{optimality gap of GVNS to the best valid lower
@@ -563,23 +537,38 @@ ratio of each reference objective to that of GVNS
 ($Ratio_{\text{method}}=Result_{\text{method}}/Result_{\text{GVNS}}$), so values
 below~$1$ are better than GVNS and above~$1$ are worse.
 
-\paragraph{On the hardness of the exact model.} A first, and perhaps
-surprising, observation is that the arc-based MILP is hard even at the smallest
-sizes: with the vehicle-count integrality it is a large mixed-integer program
-(e.g.\ already $\sim\!6000$ variables at $|V|=10$), and \emph{no} instance --
-not even $|V|=10$ -- was solved to \emph{proven} optimality within the budgets
-above by either solver. The branch-and-bound \emph{dual bound}, however, is
-tight (within a few percent of the incumbent) and, crucially, well above the LP
-relaxation; it is therefore the right yardstick for judging GVNS. We also note
-that the two solvers behave very differently on this model: their dual bounds
-agree closely (mutually cross-validating the lower bound), but HiGHS finds
-markedly better incumbents, whereas SCIP fails to find any feasible solution on
-several instances with $|V|\!\ge\!45$ and runs out of memory at $|V|=150$. HiGHS
-is thus both the stronger exact solver here and the natural in-loop choice.
+\paragraph{On the hardness of the exact model.} The arc-based MILP is hard even
+at the smallest sizes: with the vehicle-count integrality it is a large mixed
+integer program ($\sim\!6000$ variables already at $|V|=10$), and \emph{no}
+instance was solved to \emph{proven} optimality within the budgets above by either
+solver. The branch-and-bound dual bound, however, is tight and well above the LP
+relaxation, which makes it the right yardstick for GVNS. The two solvers behave
+very differently on this model: up to $|V|=42$ their dual bounds agree to within
+$0.6\%$ (mean $0.18\%$), mutually cross-validating the lower bound, but HiGHS
+finds markedly better incumbents, while SCIP returns \emph{no} feasible solution
+and no non-trivial dual bound on \emph{every} instance with $|V|\ge45$. At
+$|V|\ge100$ the arc model exhausts memory for both backends. HiGHS is thus both
+the stronger exact solver here and the natural in-loop choice.
+
+\paragraph{Exact-solver parameters.} The results above use each solver at its
+factory settings apart from the time limit, the MIP-gap target and the thread
+count; no presolve, cut, heuristic or emphasis parameter was tuned. To check that
+this does not understate the exact baseline, we re-solved a subset of eight
+instances ($|V|=30$--$59$, where the exact solver is the competitor) under three
+non-default presets per backend: aggressive primal heuristics, disabled presolve
+and full parallelism for HiGHS; aggressive heuristics, feasibility emphasis and
+aggressive separation for SCIP. Tuning does not change the picture: for HiGHS the
+best preset moves the dual bound by at most $0.04\%$ and the incumbent by at most
+$0.89\%$, and for SCIP no preset helps at all---aggressive separation and
+feasibility emphasis degrade the dual bound by up to $2.3\%$ and the incumbent by
+up to $48\%$, and on the six subset instances with $|V|\ge45$ no preset finds a
+feasible solution where the defaults find none. The default configuration is thus
+not understating the exact baseline; the full grid is released as
+\texttt{Results/exact\_tuning.csv}.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.62\textwidth]{figs/germany_solution.pdf}
+\includegraphics[width=0.37\textwidth]{figs/germany_solution.pdf}
 \caption{A GVNS solution on the Germany real-geometry network ($|V|=49$), drawn
 on its geographic layout. Node area encodes the transshipment capacity $W_v$ and
 node colour the congestion $overload_v$ (dark $=$ at capacity). All used edges
@@ -589,49 +578,53 @@ with width proportional to the vehicle count.}
 \end{figure}
 
 \subsection{Results}
-Tables~\ref{tab:synth} and~\ref{tab:real} summarise the synthetic and
-real-geometry results; Figure~\ref{fig:ratios} plots the optimality gap and the
-reference ratios against instance size. Four consistent trends emerge.
+Table~\ref{tab:results} summarises the synthetic and real-geometry results;
+Figure~\ref{fig:ratios} plots the optimality gap and the reference ratios against
+instance size. Four consistent trends emerge.
 
-\emph{First, GVNS is near-optimal on small instances.} Its gap to the
-MIP dual bound is only $0.97\%$ at $|V|=10$ and stays around $1$--$2\%$ up to
-$|V|\approx30$, then grows with size (to $\sim\!8\%$ at $|V|=50$), reflecting the
-rapidly expanding path space. Since the dual bound is a valid lower bound, this
+\emph{First, GVNS is near-optimal on small instances.} Its gap to the MIP dual
+bound is only $0.96\%$ at $|V|=10$ and stays around $1$--$2\%$ up to
+$|V|\approx20$, then grows with size ($4.8\%$ at $|V|=30$, $7.4\%$ at $|V|=50$),
+reflecting the rapidly expanding path space. Since the dual bound is a valid lower bound, this
 gap bounds the true distance of GVNS from the optimum rather than comparing it
 against itself.
 
-\emph{Second, GVNS is very stable across random seeds.} The across-seed standard
-deviation of the objective is below $0.5\%$ of the mean on every instance size
-(e.g.\ $0.07\%$ at $|V|=10$, $0.31\%$ at $|V|=50$), so a single run is
-representative and the method is robust to its randomisation.
+\emph{Second, the across-seed spread is small but grows with instance size, and
+ten seeds are needed to see it.} On the synthetic instances the standard deviation
+of the objective stays below $0.7\%$ of the mean at every size and below $0.2\%$ up
+to $|V|=20$. On the largest real networks it is appreciably higher---$2.0\%$ on
+Germany, $2.5\%$ on Italy, $2.2\%$ on European Russia---and, notably, three seeds
+badly understate it: on Italy the spread measured over three seeds is $0.4\%$
+against $2.5\%$ over ten. A single run is therefore representative on small
+networks, whereas on capacity-tight instances the best of several runs is worth
+taking.
 
 \emph{Third, GVNS matches or beats the exact solver at equal time, increasingly
 so with size.} On small instances the time-limited MIP incumbent essentially
 ties GVNS ($Ratio_{\text{MIP}}\approx1.00$ for $|V|\le30$); from $|V|=45$ the
-exact solver falls behind sharply, returning solutions $1.3$--$1.55\times$ more
+exact solver falls behind sharply, returning solutions $1.26$--$1.55\times$ more
 expensive than GVNS at $|V|=49$--$59$. In other words, for a comparable
-wall-clock budget the exact solver is up to $\sim\!55\%$ worse than GVNS. We are
-able to obtain tight dual bounds up to $|V|=59$; for $|V|\gtrsim90$ the arc
-model reaches millions of variables and the exact branch-and-bound---both its
-tight dual bound and its incumbent---becomes intractable, leaving only the
-closed-form but loose LP-relaxation lower bound. Even there GVNS keeps improving
-on its rounded-LP start by large factors ($2.2$--$3.0\times$;
-Tables~\ref{tab:synth} and~\ref{tab:real}).
+wall-clock budget the exact solver is up to $\sim\!55\%$ worse than GVNS. Tight
+dual bounds are available up to $|V|=59$; for $|V|\gtrsim90$ the arc model reaches
+millions of variables and the exact branch-and-bound becomes intractable, leaving
+only the closed-form but loose LP-relaxation bound. Even there GVNS keeps
+improving on its rounded-LP start by large factors ($2.2$--$3.0\times$,
+Table~\ref{tab:results}).
 
-\emph{Fourth, the real-geometry networks mirror the synthetic ones}
-(Table~\ref{tab:real}): the gap to the dual bound rises from $0.5\%$ (Denmark,
-$|V|=11$) to $12$--$16\%$ (Germany $|V|=49$, Spain $|V|=59$), and the exact
-incumbent degrades from parity to $1.3$--$1.5\times$ GVNS over the same range.
-This corroborates both the fidelity of the generator and the robustness of GVNS.
+\emph{Fourth, the real-geometry networks mirror the synthetic ones}: the gap to
+the dual bound rises from $0.5\%$ (Denmark, $|V|=11$) to $11$--$16\%$ (Germany
+$|V|=49$, Spain $|V|=59$), and the exact incumbent degrades from parity to
+$1.3$--$1.5\times$ GVNS over the same range, corroborating both the fidelity of
+the generator and the robustness of GVNS.
 
 \begin{figure}[t]
 \centering
-\begin{subfigure}{0.49\textwidth}
+\begin{subfigure}{0.47\textwidth}
   \includegraphics[width=\linewidth]{figs/synthetic_ratios.pdf}
   \caption{Synthetic instances (mean per size).}
   \label{fig:synth}
 \end{subfigure}\hfill
-\begin{subfigure}{0.49\textwidth}
+\begin{subfigure}{0.47\textwidth}
   \includegraphics[width=\linewidth]{figs/real_ratios.pdf}
   \caption{Real-geometry regional networks.}
   \label{fig:real}
@@ -646,113 +639,113 @@ bound. Only sizes with an exact dual bound are shown.}
 % ---------------------------------------------------------------------
 \begin{table}[t]
 \centering
-\caption{Synthetic results aggregated by network size. $gap_{\mathrm{LB}}$ is the
-GVNS optimality gap to the best MIP dual bound (a valid lower bound);
-$Ratio_\bullet$ are objective ratios to GVNS. ``$\dagger$'' = exact model
-intractable within the budget (memory/time). $n$ = number of instances.}
-\label{tab:synth}
-\small
-\begin{tabular}{ccccccc}
-\toprule
-$|V|$ & $n$ & $gap_{\mathrm{LB}}$ & Ratio LP-relax. & Ratio Rounded LP & Ratio MIP-inc. & GVNS std\\
-\midrule
-10  & 10 & 0.97\% & 0.971 & 1.192 & 1.000 & 0.07\%\\
-20  & 7  & 2.03\% & 0.965 & 1.581 & 1.004 & 0.14\%\\
-30  & 7  & 5.30\% & 0.924 & 2.199 & 1.008 & 0.49\%\\
-50  & 5  & 7.75\% & 0.807 & 2.795 & 1.550 & 0.31\%\\
-100 & 3  & \dag & 0.541 & 2.186 & \dag & 0.17\%\\
-150 & 3  & \dag & 0.372 & 2.197 & \dag & 0.26\%\\
-\bottomrule
-\end{tabular}
-\\[2pt]
-{\footnotesize $\dagger$ at these sizes the arc model has millions of variables,
-so the exact branch-and-bound---its tight dual bound and its incumbent---is
-intractable; the LP-relaxation lower bound and the rounded-LP upper bound remain
+\caption{Results on the synthetic instances (top, aggregated by network size,
+$n$ instances each) and on the real-geometry networks (bottom, one instance each).
+$gap_{\mathrm{LB}}$ is the GVNS optimality gap to the best MIP dual bound, a valid
+lower bound; $Ratio_\bullet$ are objective ratios to GVNS; $\sigma$ is the
+across-seed standard deviation as a fraction of the mean, $\bar t$ the mean GVNS
+run time. ``$\dagger$'' marks sizes at which the arc model has millions of
+variables, so the exact branch-and-bound---both its tight dual bound and its
+incumbent---is intractable; the LP-relaxation and rounded-LP bounds remain
 available in closed form (Sections~\ref{sec:relax} and~\ref{sec:gvns}).}
-\end{table}
-
-\begin{table}[t]
-\centering
-\caption{Results on the real-geometry regional networks. Sizes are the storage
-counts of the generated instances.}
-\label{tab:real}
+\label{tab:results}
 \small
-\begin{tabular}{lcccccc}
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{lccccccr}
 \toprule
-Network & $|V|$ & $gap_{\mathrm{LB}}$ & Ratio LP-relax. & Ratio Rounded LP & Ratio MIP-inc. & GVNS $t$ (s)\\
+Instances & $|V|$ & $n$ & $gap_{\mathrm{LB}}$ & Ratio LP-relax. & Ratio Rounded LP
+ & Ratio MIP-inc. & $\sigma$\\
 \midrule
-Denmark        & 11 & 0.5\%  & 0.977 & 1.283 & 1.000 & 523\\
-Belgium        & 16 & 1.1\%  & 0.968 & 1.411 & 1.003 & 1279\\
-Netherlands    & 18 & 2.1\%  & 0.944 & 1.663 & 0.999 & 2191\\
-Hungary        & 19 & 1.6\%  & 0.955 & 1.668 & 1.003 & 975\\
-Ohio USA       & 22 & 1.5\%  & 0.965 & 1.613 & 1.000 & 1535\\
-Georgia USA    & 24 & 1.5\%  & 0.971 & 1.460 & 1.017 & 1823\\
-Illinois USA   & 28 & 1.9\%  & 0.964 & 2.082 & 1.025 & 2605\\
-California USA & 39 & 1.2\%  & 0.986 & 1.747 & 1.037 & 2409\\
-United Kingdom & 42 & 2.8\%  & 0.968 & 2.016 & 1.077 & 3877\\
-Sweden         & 45 & 3.7\%  & 0.961 & 2.009 & 1.293 & 2818\\
-Italy          & 46 & 7.1\%  & 0.919 & 2.112 & 1.368 & 2669\\
-Germany        & 49 & 12.0\% & 0.858 & 2.670 & 1.531 & 3292\\
-Texas USA      & 58 & 12.0\% & 0.884 & 2.004 & 1.256 & 4168\\
-Spain          & 59 & 15.8\% & 0.850 & 2.241 & 1.432 & 4145\\
-Europe Russia  & 90 & \dag & 0.763 & 3.017 & \dag & 4784\\
+\multicolumn{8}{l}{\emph{Synthetic (mean per size)}}\\
+& 10  & 10 & 0.96\% & 0.971 & 1.192 & 1.000 & 0.06\%\\
+& 20  & 7  & 1.92\% & 0.966 & 1.583 & 1.005 & 0.18\%\\
+& 30  & 7  & 4.79\% & 0.928 & 2.210 & 1.013 & 0.68\%\\
+& 50  & 5  & 7.44\% & 0.810 & 2.804 & 1.555 & 0.66\%\\
+& 100 & 3  & \dag & 0.542 & 2.189 & \dag & 0.31\%\\
+& 150 & 3  & \dag & 0.375 & 2.210 & \dag & 0.38\%\\
+\midrule
+\multicolumn{8}{l}{\emph{Real-geometry regional networks}\hfill $\bar t$ (s)}\\
+Denmark        & 11 & 1 & 0.5\%  & 0.977 & 1.283 & 1.000 & 615\\
+Belgium        & 16 & 1 & 1.1\%  & 0.968 & 1.411 & 1.003 & 1292\\
+Netherlands    & 18 & 1 & 2.0\%  & 0.945 & 1.664 & 1.000 & 1943\\
+Hungary        & 19 & 1 & 1.6\%  & 0.955 & 1.668 & 1.003 & 1441\\
+Ohio USA       & 22 & 1 & 1.5\%  & 0.965 & 1.614 & 1.000 & 1429\\
+Georgia USA    & 24 & 1 & 1.5\%  & 0.971 & 1.460 & 1.017 & 2147\\
+Illinois USA   & 28 & 1 & 1.7\%  & 0.966 & 2.085 & 1.027 & 2434\\
+California USA & 39 & 1 & 1.0\%  & 0.988 & 1.751 & 1.039 & 2706\\
+United Kingdom & 42 & 1 & 2.8\%  & 0.968 & 2.016 & 1.077 & 3343\\
+Sweden         & 45 & 1 & 3.0\%  & 0.967 & 2.022 & 1.301 & 2812\\
+Italy          & 46 & 1 & 4.3\%  & 0.944 & 2.169 & 1.405 & 2837\\
+Germany        & 49 & 1 & 11.0\% & 0.866 & 2.692 & 1.544 & 3348\\
+Texas USA      & 58 & 1 & 11.6\% & 0.887 & 2.012 & 1.261 & 3456\\
+Spain          & 59 & 1 & 15.7\% & 0.851 & 2.243 & 1.433 & 3986\\
+Europe Russia  & 90 & 1 & \dag & 0.795 & 3.141 & \dag & 5595\\
 \bottomrule
 \end{tabular}
-\\[2pt]
-{\footnotesize $\dagger$ exact branch-and-bound (tight dual bound and incumbent)
-intractable at this size; the LP-relaxation and rounded-LP bounds remain
-available in closed form.}
 \end{table}
 
 
-\subsection{Neighborhood ablation}
+\subsection{Algorithmic components}
 \label{sec:ablation}
 
 \begin{table}[t]
 \centering
-\caption{Neighborhood ablation: mean objective increase (best of three seeds)
-when a single neighborhood is disabled, relative to the full GVNS.}
-\label{tab:ablation}
+\caption{Contribution of each algorithmic component: \emph{median} objective
+increase (best of five seeds) relative to the full GVNS on the same instances,
+seeds and budget, over a representative subset of synthetic ($|V|=20$--$100$) and
+real-geometry ($|V|=16$--$49$) instances. Medians are reported because the
+across-seed spread is heavy-tailed on the capacity-tight networks; means and
+maxima are quoted in the text. $\bar t/\bar t_{\mathrm{GVNS}}$ is the mean run
+time relative to the full method.}
+\label{tab:components}
 \small
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \toprule
-Disabled neighborhood & Synthetic & Real\\
+Variant & Synthetic & Real & $\bar t/\bar t_{\mathrm{GVNS}}$\\
 \midrule
-$N_1$ (reload-aware shortest paths) & $+1.5\%$ & $+0.7\%$\\
-$N_2$ (partially loaded edges)      & $+7.2\%$ & $+2.5\%$\\
-$N_3$ (congestion detours)          & $+0.0\%$ & $+0.8\%$\\
+\multicolumn{4}{l}{\emph{Leave-one-out neighborhood ablation}}\\
+without $N_1$ (reload-aware shortest paths) & $+0.8\%$ & $+0.8\%$ & $0.80$\\
+without $N_2$ (partially loaded edges)      & $+4.0\%$ & $+1.6\%$ & $0.52$\\
+without $N_3$ (congestion detours)          & $+0.1\%$ & $+0.2\%$ & $0.68$\\
+\midrule
+\multicolumn{4}{l}{\emph{Simplified search scheme}}\\
+Basic VNS (local search restricted to $N_1$) & $+0.3\%$ & $+0.2\%$ & $0.63$\\
 \bottomrule
 \end{tabular}
 \end{table}
-To assess the contribution of each neighborhood we ran a leave-one-out ablation:
-GVNS is re-run with a single neighborhood disabled (in both shake and VND) and
-compared, over three seeds, against the full method. Table~\ref{tab:ablation}
-reports the mean objective increase on a representative subset of synthetic
-($|V|=20$--$50$) and real-geometry ($|V|=16$--$49$) instances.
+Each component was assessed by re-running GVNS with it switched off, over five
+seeds and the same budget, against the full method (Table~\ref{tab:components}).
+$N_2$ (vehicle consolidation over partially loaded edges) is the dominant
+operator: removing it costs $7.1\%$ on average and up to $23.8\%$ on the larger
+synthetic instances, and $7.6\%$ on Germany, so filling spare vehicle capacity is
+the main lever on the objective. $N_1$ contributes a smaller but consistent
+improvement. $N_3$ (detours around congested storages) is \emph{situational}: it
+is inactive when storages are far from their limit, but becomes valuable exactly
+when the transshipment capacity binds---on Germany, where almost every storage
+operates at capacity (Figure~\ref{fig:solution}), disabling it costs $4.0\%$.
 
-
-
-Three effects stand out. $N_2$ (vehicle consolidation over partially loaded
-edges) is the dominant operator: removing it costs up to $24.7\%$ on the larger
-synthetic instances and $7.2\%$ on Germany, confirming that filling spare vehicle
-capacity is the main lever on the objective. $N_1$ contributes a smaller but
-consistent improvement. $N_3$ (detours around congested storages) is
-\emph{situational}: it is essentially inactive when storages are far from their
-limit (the synthetic and small real instances), but becomes valuable exactly when
-the transshipment capacity binds---on Germany, where almost every storage operates
-at capacity (Figure~\ref{fig:solution}), disabling $N_3$ worsens the objective by
-$3.6\%$. Each neighborhood thus earns its place, addressing a different source of
-cost.
+The last row replaces the VND by a single-neighborhood local search over $N_1$,
+keeping the same shake over $N_1$--$N_3$: this is the basic (``pure'') VNS, and
+the gap to it measures what the \emph{general} part of GVNS is worth. That effect
+is real but modest and strongly size-dependent. Counting an instance as decided
+only when the difference exceeds the across-seed spread of both runs, GVNS wins
+five of sixteen instances, Basic VNS one, and ten are ties; all but one decided
+instance has $|V|\ge50$, where GVNS leads by $1.1$--$2.0\%$, whereas below
+$|V|=30$ the two are indistinguishable. Basic VNS needs only $0.63$ of the GVNS
+time, so it is preferable under a tight budget on small networks, while the full
+VND earns its cost as the path space grows. The components are thus not equally
+important: $N_2$ dominates, the VND structure matters mainly at scale, and $N_3$
+is reserved for capacity-tight instances.
 
 
 
 \section{Conclusion}
-We addressed the design of optimal logistic transport flows with nonlinear,
-vehicle-induced edge costs and hard storage transshipment capacities. We gave
-arc-based and path-based MILP models and their linear relaxation, and proposed a
-GVNS that operates in the path space through three problem-specific
-neighborhoods: reload-aware shortest paths, partially loaded edges, and detours
-around congested storages. 
+\label{sec:concl}
+We addressed the design of logistic transport flows with nonlinear,
+vehicle-induced edge costs and hard storage transshipment capacities, gave
+arc-based and path-based MILP models with their relaxation, and proposed a GVNS
+operating in the path space through three problem-specific neighborhoods.
+
 
 On $35$ synthetic and $15$ real-geometry instances of up to $150$ storages,
 GVNS produced solutions within about one percent of the best dual bound on
@@ -762,9 +755,20 @@ medium ones; it is stable across random seeds, and its optimality gap grows with
 size, as expected from the exploding path space. A leave-one-out ablation
 confirmed that each neighborhood earns its place: consolidating flow over
 partially loaded edges ($N_2$) is the dominant operator, while congestion detours
-($N_3$) become valuable specifically on capacity-tight instances. Future work
-includes integrating column-generation pricing to feed the path pool and
-validating the approach on operational data from real logistic systems.
+($N_3$) become valuable specifically on capacity-tight instances, and that the
+full VND sweep pays for itself mainly on the larger instances, where it is worth
+$1$--$2\%$ over a basic VNS.
+
+Two extensions stand out. First, the model treats road and transshipment
+capacities as static, whereas on real networks both vary with the time of day:
+peak-hour congestion effectively lowers road throughput and shifts reload demand
+between storages. Moving to a time-expanded graph with period-dependent
+capacities $C_e(t)$ and $W_v(t)$, in the spirit of time-dependent
+routing~\cite{gendreau2015tdr}, is a natural and practically important next step,
+and the path-based GVNS carries over directly, since its neighborhoods need only
+a period-aware edge metric. Second, column-generation pricing could feed the path
+pool in place of the precomputed shortest-path pools. Validation on operational
+data from real logistic systems remains the ultimate test.
 
 \subsubsection*{Code and data availability.}
 The GVNS implementation, the exact-solver harness and the scripts that reproduce
@@ -782,66 +786,93 @@ Also, this research was supported in part through computational resources of HPC
 \FloatBarrier
 \begin{thebibliography}{99}
 \small
-\bibitem{barnhart1998} C.~Barnhart, E.~L.~Johnson, G.~L.~Nemhauser,
-M.~W.~P.~Savelsbergh, P.~H.~Vance. Branch-and-Price: Column Generation for
-Solving Huge Integer Programs. \textit{Operations Research}, 46(3):316--329,
-1998.
-\bibitem{crainic2015} T.~G.~Crainic, M.~Gendreau, J.~M.~Farvolden.
-Metaheuristics for Multi-Commodity Flow Problems. \textit{Parallel Computing},
-41:1--15, 2015.
-\bibitem{masri2015} H.~Masri, S.~Krichen, A.~Guitouni. A multi-start variable
-neighborhood search for solving the single path multicommodity flow problem.
-\textit{Applied Mathematics and Computation}, 251:132--142, 2015.
-\bibitem{amous2017} M.~Amous, S.~Toumi, B.~Jarboui, M.~Eddaly. A variable
+\bibitem{alumur2008} Alumur, S., Kara, B.Y.: Network hub location problems: the
+state of the art. Eur. J. Oper. Res. \textbf{190}(1), 1--21 (2008)
+\bibitem{amous2017} Amous, M., Toumi, S., Jarboui, B., Eddaly, M.: A variable
 neighborhood search algorithm for the capacitated vehicle routing problem.
-\textit{Computers \& Operations Research}, 88:234--248, 2017.
-\bibitem{hansen2019} P.~Hansen, N.~Mladenovi\'c. Variable Neighborhood Search.
-In \textit{Handbook of Metaheuristics}, 3rd ed., Springer, 57--97, 2019.
-\bibitem{hansen2017} P.~Hansen, N.~Mladenovi\'c, R.~Todosijevi\'c, S.~Hanafi.
-Variable neighborhood search: Basics and variants. \textit{EURO Journal on
-Computational Optimization}, 5(3):423--454, 2017.
-\bibitem{karakostas2019} P.~Karakostas, A.~Sifaleras, M.~C.~Georgiadis. A
-general variable neighborhood search-based solution approach for the
-location-inventory routing problem with distribution outsourcing.
-\textit{Computers \& Chemical Engineering}, 126:263--279, 2019.
-\bibitem{mjirda2014} A.~Mjirda, B.~Jarboui, N.~Mladenovi\'c, C.~Wilbaut,
-S.~Hanafi. A general variable neighbourhood search for the multi-product
-inventory routing problem. \textit{Int.\ J.\ of Production Research}, 2014.
-\bibitem{osm} OpenStreetMap. \url{https://www.openstreetmap.org} (accessed
-2026-04-11).
-\bibitem{gabaix1999} X.~Gabaix. Zipf's Law for Cities: An Explanation.
-\textit{Quarterly Journal of Economics}, 114(3):739--767, 1999.
-\bibitem{gastner2006} M.~T.~Gastner, M.~E.~J.~Newman. The spatial structure of
-networks. \textit{The European Physical Journal B}, 49(2):247--252, 2006.
-\bibitem{barthelemy2011} M.~Barth\'elemy. Spatial networks. \textit{Physics
-Reports}, 499(1--3):1--101, 2011.
-\bibitem{kirkley2018} A.~Kirkley, H.~Barbosa, M.~Barthelemy, G.~Ghoshal. From
-networks to optimal higher-order models of complex systems. \textit{Nature
-Physics}, 14:250--258, 2018.
-\bibitem{wilson1967} A.~G.~Wilson. A statistical theory of spatial distribution
-models. \textit{Transportation Research}, 1(3):253--269, 1967.
-\bibitem{highs} Q.~Huangfu, J.~A.~J.~Hall. Parallelizing the dual revised simplex
-method. \textit{Mathematical Programming Computation}, 10(1):119--142, 2018.
-\bibitem{scip} C.~Hojny, M.~Besan\c{c}on, K.~Bestuzheva, et al. The SCIP
-Optimization Suite 10.0. \textit{arXiv preprint} arXiv:2511.18580, 2025.
-\bibitem{charisma} Kostenetskiy, P., Kozyrev, V., Chulkevich, R., Salikova, M.,
-Mishenin, R.: High-Performance Computing at HSE University. In: Sokolinsky, L.,
-Zymbler, M., Voevodin, V., Dongarra, J. (eds.) Parallel Computational
-Technologies, pp.~17--29. Springer Nature Switzerland, Cham (2026)
-\bibitem{benchmark} V.~Kovaleva, A.~Ponomarenko. A Benchmark Generator of
-Realistic Logistic Transport Networks with Nonlinear Edge Costs and
-Transshipment Capacities. \textit{arXiv preprint} arXiv:2606.20653, 2026.
-\bibitem{benchmark-data} V.~Kovaleva, A.~Ponomarenko. A Benchmark of Realistic
-Logistic Transport Networks with Nonlinear Edge Costs and Transshipment
-Capacities (dataset). Zenodo, 2026. \url{https://doi.org/10.5281/zenodo.20372456}
+Comput. Oper. Res. \textbf{88}, 234--248 (2017)
+\bibitem{barnhart1998} Barnhart, C., Johnson, E.L., Nemhauser, G.L.,
+Savelsbergh, M.W.P., Vance, P.H.: Branch-and-price: column generation for
+solving huge integer programs. Oper. Res. \textbf{46}(3), 316--329 (1998)
+\bibitem{barthelemy2011} Barth\'elemy, M.: Spatial networks. Phys. Rep.
+\textbf{499}(1--3), 1--101 (2011)
 \bibitem{batsyn2014ttrp} Batsyn, M., Ponomarenko, A.: Heuristic for a real-life
-truck and trailer routing problem. Procedia Computer Science \textbf{31},
-778--792 (2014)
+truck and trailer routing problem. Procedia Comput. Sci. \textbf{31}, 778--792
+(2014)
 \bibitem{batsyn2015heuristic} Batsyn, M., Ponomarenko, A.: Heuristic for
 site-dependent truck and trailer routing problem with soft and hard time windows
 and split deliveries. In: Pardalos, P., Pavone, M., Farinella, G.M., Cutello, V.
-(eds.) Machine Learning, Optimization, and Big Data (MOD 2015). LNCS, vol.~9432,
-pp.~65--79. Springer, Cham (2015)
+(eds.) MOD 2015. LNCS, vol.~9432, pp.~65--79. Springer, Cham (2015)
+\bibitem{crainic2000} Crainic, T.G.: Service network design in freight
+transportation. Eur. J. Oper. Res. \textbf{122}(2), 272--288 (2000)
+\bibitem{crainic2021} Crainic, T.G., Gendreau, M.: Heuristics and metaheuristics
+for fixed-charge network design. In: Crainic, T.G., Gendron, B., Gendreau, M.
+(eds.) Network Design with Applications to Transportation and Logistics,
+pp.~91--138. Springer, Cham (2021)
+\bibitem{croxton2003} Croxton, K.L., Gendron, B., Magnanti, T.L.: A comparison
+of mixed-integer programming models for nonconvex piecewise linear cost
+minimization problems. Manage. Sci. \textbf{49}(9), 1268--1273 (2003)
+\bibitem{gabaix1999} Gabaix, X.: Zipf's law for cities: an explanation. Q. J.
+Econ. \textbf{114}(3), 739--767 (1999)
+\bibitem{gabrel1999} Gabrel, V., Knippel, A., Minoux, M.: Exact solution of
+multicommodity network optimization problems with general step cost functions.
+Oper. Res. Lett. \textbf{25}(1), 15--23 (1999)
+\bibitem{gastner2006} Gastner, M.T., Newman, M.E.J.: The spatial structure of
+networks. Eur. Phys. J. B \textbf{49}(2), 247--252 (2006)
+\bibitem{gendreau2015tdr} Gendreau, M., Ghiani, G., Guerriero, E.:
+Time-dependent routing problems: a review. Comput. Oper. Res. \textbf{64},
+189--197 (2015)
+\bibitem{gendron1999} Gendron, B., Crainic, T.G., Frangioni, A.: Multicommodity
+capacitated network design. In: Sans\`o, B., Soriano, P. (eds.)
+Telecommunications Network Planning, pp.~1--19. Kluwer, Boston (1999)
+\bibitem{ghamlouche2003} Ghamlouche, I., Crainic, T.G., Gendreau, M.:
+Cycle-based neighbourhoods for fixed-charge capacitated multicommodity network
+design. Oper. Res. \textbf{51}(4), 655--667 (2003)
+\bibitem{hansen2019} Hansen, P., Mladenovi\'c, N.: Variable neighborhood search.
+In: Handbook of Metaheuristics, 3rd edn., pp.~57--97. Springer, Cham (2019)
+\bibitem{hansen2017} Hansen, P., Mladenovi\'c, N., Todosijevi\'c, R., Hanafi, S.:
+Variable neighborhood search: basics and variants. EURO J. Comput. Optim.
+\textbf{5}(3), 423--454 (2017)
+\bibitem{hewitt2010} Hewitt, M., Nemhauser, G.L., Savelsbergh, M.W.P.: Combining
+exact and heuristic approaches for the capacitated fixed-charge network flow
+problem. INFORMS J. Comput. \textbf{22}(2), 314--325 (2010)
+\bibitem{scip} Hojny, C., Besan\c{c}on, M., Bestuzheva, K., et al.: The SCIP
+Optimization Suite 10.0. arXiv:2511.18580 (2025)
+\bibitem{highs} Huangfu, Q., Hall, J.A.J.: Parallelizing the dual revised simplex
+method. Math. Program. Comput. \textbf{10}(1), 119--142 (2018)
+\bibitem{karakostas2019} Karakostas, P., Sifaleras, A., Georgiadis, M.C.: A
+general variable neighborhood search-based solution approach for the
+location-inventory routing problem with distribution outsourcing. Comput. Chem.
+Eng. \textbf{126}, 263--279 (2019)
+\bibitem{kirkley2018} Kirkley, A., Barbosa, H., Barthelemy, M., Ghoshal, G.:
+From networks to optimal higher-order models of complex systems. Nat. Phys.
+\textbf{14}, 250--258 (2018)
+\bibitem{charisma} Kostenetskiy, P., Kozyrev, V., Chulkevich, R., Salikova, M.,
+Mishenin, R.: High-performance computing at HSE University. In: Sokolinsky, L.,
+Zymbler, M., Voevodin, V., Dongarra, J. (eds.) Parallel Computational
+Technologies, pp.~17--29. Springer, Cham (2026)
+\bibitem{benchmark} Kovaleva, V., Ponomarenko, A.: A benchmark generator of
+realistic logistic transport networks with nonlinear edge costs and
+transshipment capacities. arXiv:2606.20653 (2026)
+\bibitem{benchmark-data} Kovaleva, V., Ponomarenko, A.: A benchmark of realistic
+logistic transport networks with nonlinear edge costs and transshipment
+capacities (dataset). Zenodo (2026).
+\url{https://doi.org/10.5281/zenodo.20372456}
+\bibitem{masri2015} Masri, H., Krichen, S., Guitouni, A.: A multi-start variable
+neighborhood search for solving the single path multicommodity flow problem.
+Appl. Math. Comput. \textbf{251}, 132--142 (2015)
+\bibitem{mjirda2014} Mjirda, A., Jarboui, B., Mladenovi\'c, J., Wilbaut, C.,
+Hanafi, S.: A general variable neighbourhood search for the multi-product
+inventory routing problem. IMA J. Manag. Math. \textbf{27}(1) (2016)
+\bibitem{mladenovic1997} Mladenovi\'c, N., Hansen, P.: Variable neighborhood
+search. Comput. Oper. Res. \textbf{24}(11), 1097--1100 (1997)
+\bibitem{osm} OpenStreetMap. \url{https://www.openstreetmap.org} (accessed
+2026-04-11)
+\bibitem{rodriguez2010} Rodr\'iguez-Mart\'in, I., Salazar-Gonz\'alez, J.J.: A
+local branching heuristic for the capacitated fixed-charge network design
+problem. Comput. Oper. Res. \textbf{37}(3), 575--581 (2010)
+\bibitem{wilson1967} Wilson, A.G.: A statistical theory of spatial distribution
+models. Transp. Res. \textbf{1}(3), 253--269 (1967)
 \end{thebibliography}
 
 \end{document}

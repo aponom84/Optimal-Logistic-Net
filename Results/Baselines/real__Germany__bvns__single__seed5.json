@@ -1,0 +1,16 @@
+{
+  "instance": "Germany",
+  "group": "real",
+  "size": 49,
+  "seed": 5,
+  "disable": "",
+  "variant": "bvns",
+  "n3": "single",
+  "result_price": 2193028.703142668,
+  "init_price": 5921272.234000004,
+  "solving_time": 1876.4602165222168,
+  "time_limit": 5880.0,
+  "ok": true,
+  "wall_time": 1876.56,
+  "finished_at": "2026-08-27T03:40:13"
+}

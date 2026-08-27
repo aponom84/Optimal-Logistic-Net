@@ -14,8 +14,24 @@ class VNS:
         self.initRes = None
         self.disabled = set()  # neighborhood ids (1,2,3) to skip -- for ablation
 
+        # --- search-scheme configuration (see cluster/run_gvns.py VARIANTS) ---
+        # n3sweep=False (default): N3 removes the single most congested storage.
+        #     This is what the paper reports.  It arose because two arguments of
+        #     the N3 call were transposed, so the congestion test never fired --
+        #     but measured over 50 instances x 10 seeds it matches the prefix
+        #     sweep overall and is clearly better on capacity-tight networks
+        #     (Germany), so it is kept as the published rule.
+        # n3sweep=True: the prefix sweep over |V|/5..|V|/4 congested storages.
+        #     Tested and reported as a variant; not better.  See
+        #     cluster/compare_configs.py and Results/config_comparison.csv.
+        self.n3sweep = False
+        self.shakeNeighborhoods = {1, 2, 3}  # empty => no shake  (VND only)
+        self.lsNeighborhoods = {1, 2, 3}     # empty => no VND    (reduced VNS)
+        self.deadline = float("inf")         # absolute wall-clock stop time
+
     def Solve(self, maxSolvingTime):
         startTime = time()
+        self.deadline = startTime + maxSolvingTime
         self.shortestPaths.PrepareData(self.net)
         self.InitSolution()
         print("Init:", str(self.result.resultPrice))
@@ -24,12 +40,13 @@ class VNS:
         while k < 4 and  time() - startTime < maxSolvingTime:
             time1 = self.net.storageCount
             currRes = self.result.resultPrice
-            if k == 1:
-                self.ProccessAddNewShortestPathsNeighborhood(5, True, 10+time1) 
-            elif k == 2:
-                self.ProccessAddNewShortestPathsThroughUsedEdgesNeighborhood(3, 5, 100+time1*2)
-            elif k == 3:
-                self.ProccessAddNewShortestPathsAvoidingStoragesNeighborhood(3, 0.5, self.net.storageCount//4, self.net.storageCount//3, 100+time1*2)
+            if k in self.shakeNeighborhoods:
+                if k == 1:
+                    self.ProccessAddNewShortestPathsNeighborhood(5, True, 10+time1)
+                elif k == 2:
+                    self.ProccessAddNewShortestPathsThroughUsedEdgesNeighborhood(3, 5, 100+time1*2)
+                elif k == 3:
+                    self.AvoidCongestedStorages(3, 0.5, self.net.storageCount//4, self.net.storageCount//3, 100+time1*2)
 
             same = not(sameResult == -1 or Math.Sm(self.result.resultPrice, sameResult))
             sameResult = self.result.resultPrice
@@ -46,12 +63,15 @@ class VNS:
 
 
     def VND(self, startTime, maxSolvingTime, same = False):
+        if not self.lsNeighborhoods:
+            return
         proceed = True
         firstCount = 0
         time1 = self.net.storageCount//2
         time1 = 10 if self.net.storageCount == 100 else 20 
         while proceed and time() - startTime < maxSolvingTime:
-            first = self.ProccessAddNewShortestPathsNeighborhood(firstCount % 3 + 1, firstCount % 2, 5+time1)
+            first = (self.ProccessAddNewShortestPathsNeighborhood(firstCount % 3 + 1, firstCount % 2, 5+time1)
+                     if 1 in self.lsNeighborhoods else False)
             firstCount += 1
             print("after first:", str(self.result.resultPrice))
             if not first:
@@ -59,10 +79,12 @@ class VNS:
                     proceed = False
                     self.ClearData()
                     continue
-                second = self.ProccessAddNewShortestPathsThroughUsedEdgesNeighborhood(2, 1, 30 + time1*2)
+                second = (self.ProccessAddNewShortestPathsThroughUsedEdgesNeighborhood(2, 1, 30 + time1*2)
+                          if 2 in self.lsNeighborhoods else False)
                 print("after second:", str(self.result.resultPrice))
                 if not second:
-                    proceed = self.ProccessAddNewShortestPathsAvoidingStoragesNeighborhood(1, 0.75, self.net.storageCount//5, self.net.storageCount//4, 30 + time1*2)
+                    proceed = (self.AvoidCongestedStorages(1, 0.75, self.net.storageCount//5, self.net.storageCount//4, 30 + time1*2)
+                               if 3 in self.lsNeighborhoods else False)
                     print("after third:", str(self.result.resultPrice))
                 self.ClearData()
             else:
@@ -125,6 +147,24 @@ class VNS:
         newPaths = {productId : self.shortestPaths.GetNewShortestPaths(productId, random,newPathsCount, self.data) for productId in self.net.productId}
         return self.ProcessNewPaths(newPaths, maxTime)
 
+    def AvoidCongestedStorages(self, newPathsCount, threshold, minSubset, maxSubset, maxTime):
+        """N3 entry point, in the roles used by the paper (Sec. 3.3).
+
+        ``threshold`` is the congestion ratio above which a storage counts as a
+        bottleneck; ``minSubset``/``maxSubset`` bound the number of congested
+        storages removed.  With ``n3sweep`` the arguments are passed in the
+        roles the callee expects; without it they are passed in the transposed
+        order used for arXiv v1, which collapses the sweep to the single most
+        congested storage.  See ``self.n3sweep``.
+        """
+        if self.n3sweep:
+            return self.ProccessAddNewShortestPathsAvoidingStoragesNeighborhood(
+                newPathsCount=newPathsCount, minCount=minSubset,
+                overloadTreshold=threshold, maxStoragesCount=maxSubset,
+                maxTime=maxTime)
+        return self.ProccessAddNewShortestPathsAvoidingStoragesNeighborhood(
+            newPathsCount, threshold, minSubset, maxSubset, maxTime)
+
     def ProccessAddNewShortestPathsAvoidingStoragesNeighborhood(self, newPathsCount, minCount, overloadTreshold, maxStoragesCount, maxTime):
         if 3 in self.disabled:
             return False
@@ -156,8 +196,13 @@ class VNS:
         self.shortestPaths.InitTempGraphAvodingStorages(avoidedStorages)
 
         newPaths = {productId : [] for productId in self.net.productId}
-        
+
+        genStart = time()
         for i in range(startI, endI):
+            # path generation is unbounded by construction; stop it at the
+            # neighborhood's own MILP budget or at the global time limit
+            if i > startI and (time() >= self.deadline or time() - genStart > maxTime):
+                break
             self.shortestPaths.RemoveNodeFromTempGraph(overload[i][2])
             for (productId, info) in self.net.products.items():
                 newPaths[productId] += self.shortestPaths.GetShortestPathsFromTempGraph(productId, info["source"], info["destination"], self.data, anotherData=newPaths, count = newPathsCount)

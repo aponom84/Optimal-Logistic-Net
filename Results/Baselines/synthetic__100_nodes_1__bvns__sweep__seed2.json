@@ -1,0 +1,16 @@
+{
+  "instance": "100_nodes_1",
+  "group": "synthetic",
+  "size": 100,
+  "seed": 2,
+  "disable": "",
+  "variant": "bvns",
+  "n3": "sweep",
+  "result_price": 49566920.71028016,
+  "init_price": 120630014.43399973,
+  "solving_time": 4139.4994649887085,
+  "time_limit": 12000.0,
+  "ok": true,
+  "wall_time": 4139.91,
+  "finished_at": "2026-08-27T05:04:14"
+}

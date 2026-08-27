@@ -10,7 +10,7 @@
 #
 #SBATCH --job-name=olnet_exact
 #SBATCH --partition=rocky
-#SBATCH --account=proj_1844
+#SBATCH --account=proj_1902
 #SBATCH --cpus-per-task=8
 #SBATCH --time=12:00:00
 #SBATCH --output=cluster/logs/%A_%a.out

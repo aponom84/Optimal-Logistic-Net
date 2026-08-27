@@ -1,0 +1,16 @@
+{
+  "instance": "Denmark",
+  "group": "real",
+  "size": 11,
+  "seed": 8,
+  "disable": "",
+  "variant": "gvns",
+  "n3": "sweep",
+  "result_price": 259346.56390999994,
+  "init_price": 332714.073,
+  "solving_time": 887.2011368274689,
+  "time_limit": 1320.0,
+  "ok": true,
+  "wall_time": 887.21,
+  "finished_at": "2026-08-26T22:43:51"
+}

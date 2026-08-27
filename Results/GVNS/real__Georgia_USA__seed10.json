@@ -1,0 +1,16 @@
+{
+  "instance": "Georgia_USA",
+  "group": "real",
+  "size": 24,
+  "seed": 10,
+  "disable": "",
+  "variant": "gvns",
+  "n3": "single",
+  "result_price": 787452.4871662476,
+  "init_price": 1144278.6260000006,
+  "solving_time": 2578.480993747711,
+  "time_limit": 2880.0,
+  "ok": true,
+  "wall_time": 2578.51,
+  "finished_at": "2026-08-26T17:31:19"
+}

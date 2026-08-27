@@ -12,7 +12,7 @@ import json
 import math
 import os
 
-COLS = ["group", "size", "instance", "backend", "status", "proven_optimal",
+COLS = ["group", "size", "instance", "backend", "preset", "status", "proven_optimal",
         "primal_bound", "dual_bound", "gap", "solve_time", "wall_time",
         "nodes", "n_int_vars", "n_cont_vars", "n_constraints",
         "time_limit", "gap_tol", "threads", "ok", "error"]

@@ -1,0 +1,16 @@
+{
+  "instance": "California_USA",
+  "group": "real",
+  "size": 39,
+  "seed": 1,
+  "disable": "",
+  "variant": "gvns",
+  "n3": "sweep",
+  "result_price": 3671559.33802989,
+  "init_price": 6396638.617000005,
+  "solving_time": 2183.504521369934,
+  "time_limit": 4680.0,
+  "ok": true,
+  "wall_time": 2183.78,
+  "finished_at": "2026-08-27T03:55:25"
+}

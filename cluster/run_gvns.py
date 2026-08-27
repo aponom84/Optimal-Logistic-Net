@@ -21,6 +21,17 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from NetProductPath import NetProducts
 from VNS import VNS
 
+# Search-scheme variants, expressed as flags on the VNS object.  ``gvns`` is the
+# published method; ``bvns`` is the "pure VNS" baseline asked for by review 3 --
+# the same shake, but the local search is a single neighborhood instead of the
+# full VND sweep.  ``vnd`` and ``rvns`` are available but not used in the paper.
+VARIANTS = {
+    "gvns": dict(shakeNeighborhoods={1, 2, 3}, lsNeighborhoods={1, 2, 3}),
+    "bvns": dict(shakeNeighborhoods={1, 2, 3}, lsNeighborhoods={1}),
+    "vnd":  dict(shakeNeighborhoods=set(),     lsNeighborhoods={1, 2, 3}),
+    "rvns": dict(shakeNeighborhoods={1, 2, 3}, lsNeighborhoods=set()),
+}
+
 
 def main():
     ap = argparse.ArgumentParser()
@@ -45,18 +56,28 @@ def main():
     time_limit = float(row["time_limit"])
     disable = row.get("disable", "").strip()  # e.g. "" (full), "1", "2", "3"
     disabled = {int(x) for x in disable.split("+") if x}
-    print(f"[run] tag={row['tag']} seed={seed} time_limit={time_limit}s disable={disable or 'none'}")
+    variant = (row.get("variant", "") or "gvns").strip()
+    if variant not in VARIANTS:
+        raise SystemExit(f"unknown variant {variant!r}; expected one of {sorted(VARIANTS)}")
+    n3 = (row.get("n3", "") or "sweep").strip()
+    if n3 not in ("sweep", "single"):
+        raise SystemExit(f"unknown n3 mode {n3!r}; expected 'sweep' or 'single'")
+    print(f"[run] tag={row['tag']} seed={seed} time_limit={time_limit}s "
+          f"variant={variant} n3={n3} disable={disable or 'none'}")
 
     t0 = time.time()
     try:
         net = NetProducts(float(row["cap"]), row["instance_path"] + "/")
         vns = VNS(net)
         vns.disabled = disabled
+        vns.n3sweep = (n3 == "sweep")
+        for attr, value in VARIANTS[variant].items():
+            setattr(vns, attr, value)
         vns.Solve(time_limit)
         rec = {
             "instance": row["name"], "group": row.get("group", ""),
             "size": int(row.get("size", net.storageCount)), "seed": seed,
-            "disable": disable,
+            "disable": disable, "variant": variant, "n3": n3,
             "result_price": vns.result.resultPrice,
             "init_price": vns.initRes,
             "solving_time": vns.result.solvingTime,
@@ -65,6 +86,7 @@ def main():
     except Exception as e:
         rec = {"instance": row.get("name", ""), "group": row.get("group", ""),
                "size": int(row.get("size", 0)), "seed": seed, "disable": disable,
+               "variant": variant, "n3": n3,
                "ok": False, "error": repr(e), "traceback": traceback.format_exc(),
                "time_limit": time_limit}
     rec["wall_time"] = round(time.time() - t0, 2)

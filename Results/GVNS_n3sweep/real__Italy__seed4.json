@@ -1,0 +1,16 @@
+{
+  "instance": "Italy",
+  "group": "real",
+  "size": 46,
+  "seed": 4,
+  "disable": "",
+  "variant": "gvns",
+  "n3": "sweep",
+  "result_price": 3156297.637427591,
+  "init_price": 6669578.367999993,
+  "solving_time": 3264.117171525955,
+  "time_limit": 5520.0,
+  "ok": true,
+  "wall_time": 3264.21,
+  "finished_at": "2026-08-27T05:05:41"
+}

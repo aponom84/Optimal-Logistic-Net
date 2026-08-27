@@ -40,14 +40,15 @@ def main():
         print(f"[skip] {out} exists")
         return
 
-    print(f"[run] idx={args.idx} tag={row['tag']} backend={row['backend']} "
+    preset = (row.get("preset", "") or "default").strip()
+    print(f"[run] idx={args.idx} tag={row['tag']} backend={row['backend']} preset={preset} "
           f"time={row['time_limit']}s gap={row['gap']} threads={row['threads']}")
     t0 = time.time()
     try:
         r = exact_solver.solve_instance(
             row["instance_path"], cap=float(row["cap"]), backend=row["backend"],
             time_limit=float(row["time_limit"]), gap=float(row["gap"]),
-            threads=int(row["threads"]), keep_solution=False)
+            threads=int(row["threads"]), keep_solution=False, preset=preset)
         rec = r.to_row()
         rec["ok"] = True
         rec["group"] = row.get("group", "")
@@ -55,7 +56,7 @@ def main():
     except Exception as e:  # keep failures visible in the aggregate
         rec = {"instance": row.get("name", ""), "group": row.get("group", ""),
                "size": int(row.get("size", 0)), "backend": row["backend"],
-               "ok": False, "error": repr(e), "traceback": traceback.format_exc(),
+               "preset": preset, "ok": False, "error": repr(e), "traceback": traceback.format_exc(),
                "time_limit": float(row["time_limit"])}
     rec["wall_time"] = round(time.time() - t0, 2)
     rec["finished_at"] = time.strftime("%Y-%m-%dT%H:%M:%S")

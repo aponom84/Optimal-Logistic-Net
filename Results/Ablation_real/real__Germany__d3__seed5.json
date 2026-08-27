@@ -1,0 +1,16 @@
+{
+  "instance": "Germany",
+  "group": "real",
+  "size": 49,
+  "seed": 5,
+  "disable": "3",
+  "variant": "gvns",
+  "n3": "single",
+  "result_price": 2393332.1530049974,
+  "init_price": 5921272.234000004,
+  "solving_time": 2754.150944709778,
+  "time_limit": 5880.0,
+  "ok": true,
+  "wall_time": 2754.3,
+  "finished_at": "2026-08-26T22:14:19"
+}

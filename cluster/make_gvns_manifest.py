@@ -5,6 +5,12 @@ storages, in minutes" => 2 * size * 60 seconds.
 
     python cluster/make_gvns_manifest.py --sets synthetic real --seeds 5 \
         --out cluster/gvns_manifest.csv
+
+``--n3`` selects the N3 configuration: ``sweep`` is the method as described in
+the paper (detours around a prefix of the most congested storages); ``single``
+reproduces the arXiv v1 runs, in which two arguments of the N3 call were
+transposed and only the single most congested storage was avoided.  Send the two
+configurations to *different* output directories -- the tags are identical.
 """
 import argparse
 import csv
@@ -28,6 +34,11 @@ def main():
     ap.add_argument("--cap", type=float, default=50)
     ap.add_argument("--minutes-per-size", type=float, default=2.0,
                     help="wall budget = minutes_per_size * size (paper: 2)")
+    ap.add_argument("--n3", default="sweep", choices=["sweep", "single"],
+                    help="N3 configuration (see module docstring)")
+    ap.add_argument("--variant", default="gvns",
+                    choices=["gvns", "bvns", "vnd", "rvns"],
+                    help="search scheme; see VARIANTS in cluster/run_gvns.py")
     ap.add_argument("--out", default="cluster/gvns_manifest.csv")
     args = ap.parse_args()
 
@@ -47,17 +58,19 @@ def main():
                     "tag": f"{grp}__{name}__seed{s}", "group": grp, "name": name,
                     "size": size, "instance_path": os.path.join(SET_DIRS[grp], name),
                     "seed": s, "cap": args.cap, "time_limit": tl,
+                    "variant": args.variant, "n3": args.n3,
                 })
 
     rows.sort(key=lambda r: (r["size"], r["group"], r["name"], r["seed"]))
-    fields = ["tag", "group", "name", "size", "instance_path", "seed", "cap", "time_limit"]
+    fields = ["tag", "group", "name", "size", "instance_path", "seed", "cap",
+              "time_limit", "variant", "n3"]
     out = os.path.join(REPO, args.out) if not os.path.isabs(args.out) else args.out
     with open(out, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fields)
         w.writeheader()
         w.writerows(rows)
     total_h = sum(r["time_limit"] for r in rows) / 3600.0
-    print(f"wrote {len(rows)} GVNS jobs -> {out}")
+    print(f"wrote {len(rows)} GVNS jobs ({args.variant}, n3={args.n3}) -> {out}")
     print(f"worst-case wall if all hit their limit: {total_h:.1f} job-hours")
 
 

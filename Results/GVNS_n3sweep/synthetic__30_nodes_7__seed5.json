@@ -1,0 +1,16 @@
+{
+  "instance": "30_nodes_7",
+  "group": "synthetic",
+  "size": 30,
+  "seed": 5,
+  "disable": "",
+  "variant": "gvns",
+  "n3": "sweep",
+  "result_price": 1794597.828707662,
+  "init_price": 3708648.5200000037,
+  "solving_time": 2377.314168214798,
+  "time_limit": 3600.0,
+  "ok": true,
+  "wall_time": 2377.36,
+  "finished_at": "2026-08-27T03:49:34"
+}
