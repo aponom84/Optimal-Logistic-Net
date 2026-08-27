@@ -41,6 +41,7 @@
 
 \captionsetup{font=small,labelfont=bf}
 
+
 \usepackage{placeins}  % \FloatBarrier -- keep floats out of the reference list
 % Formal algorithm typesetting
 \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
@@ -77,9 +78,9 @@ Laboratory of Algorithms and Technologies for Network Analysis, HSE University, 
 \maketitle
 
 \begin{abstract}
-We study the problem of routing multiple commodities through a logistic
-transport network so as to minimise the joint cost of vehicle movements and of
-transshipment (reload) operations at intermediate storages. The problem combines
+We study how to route multiple commodities through a logistic transport network
+so as to minimise the joint cost of vehicle movements and of transshipment
+(reload) operations at intermediate storages. The problem combines
 two features common in practice but rarely treated together: edge costs that are
 \emph{nonlinear} in the transported volume, because freight is carried by
 vehicles of fixed capacity, and \emph{hard upper bounds} on the volume that can
@@ -116,7 +117,7 @@ classical multi-commodity flow problem into a mixed integer program with node
 capacities and a step-wise vehicle cost term.
 
 \paragraph{Related work.} The problem belongs to the family of capacitated
-multi-commodity network design (MCND)~\cite{gendron1999,crainic2000}, which is
+multicommodity network design (MCND)~\cite{gendron1999,crainic2000}, which is
 NP-hard. Exact approaches solve path-based formulations by column generation and
 branch-and-price~\cite{barnhart1998}; at practical scale heuristics dominate,
 notably cycle-based neighbourhoods inside tabu search~\cite{ghamlouche2003},
@@ -344,9 +345,9 @@ escape local optima.
 \paragraph{N2 -- Partially loaded edges.}
 A partially loaded vehicle has spare room: routing extra flow over such an edge
 can free another vehicle and reduce the vehicle count. For every edge we
-compute the residual load
-$load_e=\big(\sum_{k\in K}\sum_{p\in\Pi_k:\,e\in p} x^k_p\big) \bmod C$ for every
-$e\in \E$, and build a graph $G''$ that favours edges with free capacity. Fully loaded
+compute, for every $e\in \E$, the residual load $load_e=\big(\sum_{k\in
+K}\sum_{p\in\Pi_k:\,e\in p} x^k_p\big) \bmod C$, and build a graph $G''$ that
+favours edges with free capacity. Fully loaded
 edges ($load_e=0$) are least attractive, since new flow would require an extra
 vehicle, and keep their weight from $G'$. The remaining edges receive
 \begin{equation}
@@ -417,8 +418,8 @@ $k \gets 1$\;
 \end{algorithm}
 
 \subsection{Overall algorithm}
-Algorithm~\ref{alg:pn} is the primitive shared by the three neighborhoods; only
-its candidate-generation step, \GenPaths, differs between $N_1$, $N_2$ and $N_3$.
+Algorithm~\ref{alg:pn} is the primitive shared by the three neighborhoods. Only
+the generation step \GenPaths\ differs between $N_1$, $N_2$ and $N_3$.
 Algorithm~\ref{alg:gvns} embeds it in the GVNS template: starting from the
 rounded-LP solution of Eq.~\eqref{eq:init}, each round shakes with the current
 neighborhood---diversified parameters and a larger MILP budget
@@ -432,18 +433,17 @@ improvement.
 \section{Benchmark instances}
 \label{sec:data}
 
-We evaluate GVNS on our open benchmark~\cite{benchmark,benchmark-data} for this
-problem, published as a dataset on Zenodo (CC-BY-4.0); we summarise here only what
-is needed for the study and refer the reader to~\cite{benchmark} for the full
-generator. The corpus targets upper-level road networks connecting regional
-sorting centres, with a generator calibrated on OpenStreetMap~\cite{osm} data for
-nine European countries, five large U.S.\ states and the European part of Russia.
-It reproduces the structural statistics of real regional transport
-systems---Zipf-distributed city sizes~\cite{gabaix1999}, a spatial-network budget
+We evaluate GVNS on our open benchmark~\cite{benchmark,benchmark-data}, published
+as a Zenodo dataset (CC-BY-4.0); we summarise only what the study needs and refer
+to~\cite{benchmark} for the generator. The corpus targets upper-level road networks
+connecting regional sorting centres, calibrated on OpenStreetMap~\cite{osm} data
+for nine European countries, five large U.S.\ states and the European part of
+Russia. It reproduces the structural statistics of real regional transport
+systems---Zipf city sizes~\cite{gabaix1999}, a spatial-network budget
 topology~\cite{gastner2006}, centrality-driven transshipment
 capacities~\cite{barthelemy2011,kirkley2018} and a doubly constrained gravity
-demand model~\cite{wilson1967}---yielding \emph{near-planar, large-diameter}
-graphs (mean vertex degree about $3.575$), the opposite of small-world networks.
+demand model~\cite{wilson1967}---yielding \emph{near-planar, large-diameter} graphs
+(mean degree about $3.575$), the opposite of small-world networks.
 The corpus comprises $35$ synthetic instances ($10$ with $10$ storages, $7$ each
 with $20$ and $30$, $5$ with $50$, and $3$ each with $100$ and $150$) and $15$
 real-geometry instances built on the calibration road graphs ($11$--$90$
@@ -484,27 +484,27 @@ much smaller path space, remains applicable throughout.
 the Shake step are given as VND\,/\,Shake.}
 \label{tab:params}
 \small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{ll@{\qquad}ll}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llll}
 \toprule
 Setting & Value & Setting & Value\\
 \midrule
-Neighborhoods $k_{\max}$ & $3$ ($N_1,N_2,N_3$)
-  & $N_2$ travel-cost exponent $\alpha$ & $0.5$\\
-GVNS time limit $t_{\max}$ & $2|V|$ min
+Neighborhoods $k_{\max}$ & $3$
+  & $N_2$ exponent $\alpha$ & $0.5$\\
+GVNS limit $t_{\max}$ & $2|V|$\,min
   & $N_2$ free-room stop & $1C$\,/\,$5C$\\
 Random seeds & $10$\,/\,$5$
-  & $N_3$ storages removed & $1$ (most congested)\\
+  & $N_3$ storages removed & $1$ (worst)\\
 Vehicle capacity $C$ & $50$
-  & $N_1$ shortest-path pool & $20$ paths/commodity\\
-$N_1$ new paths per commodity & $1$--$3$\,/\,$5$
-  & $N_3$ new paths per commodity & $1$\,/\,$3$\\
-Initial-solution MILP limit & $300$~s
-  & Exact-solver MIP-gap target & $0$\\
-Redistribution MILP gap & $1\%$
-  & Exact-solver budget & $30$~min\,\dots\,$4$~h\\
-$\tau_{\mathrm{shk}}$ ($N_1$\,/\,$N_2,N_3$) & $10{+}|V|$\,/\,$100{+}2|V|$~s
-  & $\tau_{\mathrm{vnd}}$ ($N_1$\,/\,$N_2,N_3$) & $25$\,/\,$70$~s\\
+  & $N_1$ path pool & $20$\\
+$N_1$ paths/commodity & $1$--$3$\,/\,$5$
+  & $N_3$ paths/commodity & $1$\,/\,$3$\\
+Init.\ MILP limit & $300$\,s
+  & Exact gap target & $0$\\
+Redistrib.\ MILP gap & $1\%$
+  & Exact budget & $30$\,min--$4$\,h\\
+$\tau_{\mathrm{shk}}$ ($N_1$\,/\,rest) & $10{+}|V|$\,/\,$100{+}2|V|$\,s
+  & $\tau_{\mathrm{vnd}}$ ($N_1$\,/\,rest) & $25$\,/\,$70$\,s\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -629,10 +629,9 @@ the generator and the robustness of GVNS.
   \caption{Real-geometry regional networks.}
   \label{fig:real}
 \end{subfigure}
-\caption{Left axis: objective ratio of each reference method to GVNS versus
-network size (values below the GVNS line at $1.0$ are better than GVNS, above
-are worse). Right axis (dotted): the GVNS optimality gap to the best valid lower
-bound. Only sizes with an exact dual bound are shown.}
+\caption{Left axis: objective ratio of each reference method to GVNS versus network
+size (below the line at $1.0$ is better than GVNS, above is worse). Right axis
+(dotted): the GVNS gap to the best valid lower bound.}
 \label{fig:ratios}
 \end{figure}
 
@@ -642,19 +641,19 @@ bound. Only sizes with an exact dual bound are shown.}
 \caption{Results on the synthetic instances (top, aggregated by network size,
 $n$ instances each) and on the real-geometry networks (bottom, one instance each).
 $gap_{\mathrm{LB}}$ is the GVNS optimality gap to the best MIP dual bound, a valid
-lower bound; $Ratio_\bullet$ are objective ratios to GVNS; $\sigma$ is the
+lower bound; the three middle columns are objective ratios of the LP relaxation,
+the rounded LP and the time-limited MIP incumbent to GVNS; $\sigma$ is the
 across-seed standard deviation as a fraction of the mean, $\bar t$ the mean GVNS
 run time. ``$\dagger$'' marks sizes at which the arc model has millions of
-variables, so the exact branch-and-bound---both its tight dual bound and its
-incumbent---is intractable; the LP-relaxation and rounded-LP bounds remain
-available in closed form (Sections~\ref{sec:relax} and~\ref{sec:gvns}).}
+variables and the exact branch-and-bound is intractable; the LP-relaxation and
+rounded-LP bounds remain available in closed form.}
 \label{tab:results}
 \small
-\setlength{\tabcolsep}{4.5pt}
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{lccccccr}
 \toprule
-Instances & $|V|$ & $n$ & $gap_{\mathrm{LB}}$ & Ratio LP-relax. & Ratio Rounded LP
- & Ratio MIP-inc. & $\sigma$\\
+Instances & $|V|$ & $n$ & $gap_{\mathrm{LB}}$ & LP-relax. & Rounded LP
+ & MIP-inc. & $\sigma$\\
 \midrule
 \multicolumn{8}{l}{\emph{Synthetic (mean per size)}}\\
 & 10  & 10 & 0.96\% & 0.971 & 1.192 & 1.000 & 0.06\%\\
@@ -693,10 +692,9 @@ Europe Russia  & 90 & 1 & \dag & 0.795 & 3.141 & \dag & 5595\\
 \caption{Contribution of each algorithmic component: \emph{median} objective
 increase (best of five seeds) relative to the full GVNS on the same instances,
 seeds and budget, over a representative subset of synthetic ($|V|=20$--$100$) and
-real-geometry ($|V|=16$--$49$) instances. Medians are reported because the
-across-seed spread is heavy-tailed on the capacity-tight networks; means and
-maxima are quoted in the text. $\bar t/\bar t_{\mathrm{GVNS}}$ is the mean run
-time relative to the full method.}
+real-geometry ($|V|=16$--$49$) instances. Medians are used because the across-seed
+spread is heavy-tailed on the capacity-tight networks; means and maxima are quoted
+in the text. $\bar t/\bar t_{\mathrm{GVNS}}$ is the run time relative to GVNS.}
 \label{tab:components}
 \small
 \begin{tabular}{lccc}
@@ -747,35 +745,29 @@ arc-based and path-based MILP models with their relaxation, and proposed a GVNS
 operating in the path space through three problem-specific neighborhoods.
 
 
-On $35$ synthetic and $15$ real-geometry instances of up to $150$ storages,
-GVNS produced solutions within about one percent of the best dual bound on
-small networks (a MIP lower bound far tighter than the LP relaxation) and, for a
-comparable budget, up to $55\%$ cheaper than a time-limited exact solver on the
-medium ones; it is stable across random seeds, and its optimality gap grows with
-size, as expected from the exploding path space. A leave-one-out ablation
-confirmed that each neighborhood earns its place: consolidating flow over
-partially loaded edges ($N_2$) is the dominant operator, while congestion detours
-($N_3$) become valuable specifically on capacity-tight instances, and that the
-full VND sweep pays for itself mainly on the larger instances, where it is worth
-$1$--$2\%$ over a basic VNS.
+On $35$ synthetic and $15$ real-geometry instances of up to $150$ storages, GVNS
+came within about one percent of the best dual bound on small networks and, for a
+comparable budget, was up to $55\%$ cheaper than a time-limited exact solver on
+the medium ones; its optimality gap grows with size, as the path space explodes.
+The component study showed that consolidating flow over partially loaded edges
+($N_2$) is the dominant operator, that congestion detours ($N_3$) pay off only on
+capacity-tight instances, and that the full VND is worth $1$--$2\%$ over a basic
+VNS on the larger networks but nothing below $|V|=30$.
 
-Two extensions stand out. First, the model treats road and transshipment
-capacities as static, whereas on real networks both vary with the time of day:
-peak-hour congestion effectively lowers road throughput and shifts reload demand
-between storages. Moving to a time-expanded graph with period-dependent
-capacities $C_e(t)$ and $W_v(t)$, in the spirit of time-dependent
-routing~\cite{gendreau2015tdr}, is a natural and practically important next step,
-and the path-based GVNS carries over directly, since its neighborhoods need only
-a period-aware edge metric. Second, column-generation pricing could feed the path
-pool in place of the precomputed shortest-path pools. Validation on operational
-data from real logistic systems remains the ultimate test.
+Two extensions stand out. The model treats capacities as static, whereas on real
+networks both road throughput and reload demand vary with the time of day; moving
+to a time-expanded graph with period-dependent $C_e(t)$ and $W_v(t)$, in the
+spirit of time-dependent routing~\cite{gendreau2015tdr}, is a natural next step,
+and the path-based GVNS carries over directly since its neighborhoods need only a
+period-aware edge metric. Column-generation pricing could also feed the path pool
+in place of the precomputed shortest-path pools, and validation on operational
+data remains the ultimate test.
 
 \subsubsection*{Code and data availability.}
-The GVNS implementation, the exact-solver harness and the scripts that reproduce
-the experiments of Section~\ref{sec:experiments} are available at
-\url{https://github.com/aponom84/Optimal-Logistic-Net}. The benchmark instances
-are published as a Zenodo dataset~\cite{benchmark-data} under CC-BY-4.0, and each
-is reproducible from its seed and parameters~\cite{benchmark}.
+The implementation, the exact-solver harness and the scripts that regenerate every
+table and figure of Section~\ref{sec:experiments} are at
+\url{https://github.com/aponom84/Optimal-Logistic-Net}; the instances are on
+Zenodo~\cite{benchmark-data} under CC-BY-4.0.
 
 \subsubsection*{Acknowledgements.}
 The study was implemented in the framework of the Basic Research Program at
