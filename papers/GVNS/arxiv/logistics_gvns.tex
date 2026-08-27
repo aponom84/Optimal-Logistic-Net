@@ -243,8 +243,8 @@ edge to carry the total flow:
  \le W_v, \qquad \forall v\in \Vv;
 \label{eq:node-arc}\\
 \text{path:}\quad
-&\sum_{\substack{k\in K\\ v\neq s_k,\,v\neq t_k}}\sum_{p\in\Pi_k}
- \sum_{v\in p} x^k_p \le W_v, \qquad \forall v\in \Vv.
+&\sum_{\substack{k\in K\\ v\neq s_k,\,v\neq t_k}}\ \sum_{\substack{p\in\Pi_k\\ v\in p}}
+ x^k_p \le W_v, \qquad \forall v\in \Vv.
 \label{eq:node-path}
 \end{align}
 
@@ -371,7 +371,7 @@ capacity; in Shake, three paths and $5C$).
 Storages whose transshipment volume is at or near their capacity are
 bottlenecks, and routing around them is desirable. For the current solution we
 compute, for every $v\in \Vv$, a congestion ratio
-$overload_v=\frac1{W_v}\sum_{k\in K,\,v\neq s_k,t_k}\sum_{p\in\Pi_k}\sum_{v\in p}
+$overload_v=\frac1{W_v}\sum_{k\in K:\,v\neq s_k,t_k}\ \sum_{p\in\Pi_k:\,v\in p}
 x^k_p$. Storages are sorted by decreasing $overload_v$ and the single most
 congested one is deleted from $G'$ (except where it is the commodity's own origin
 or destination); a shortest path is then recomputed, yielding detours that bypass
