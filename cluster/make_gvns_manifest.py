@@ -6,11 +6,11 @@ storages, in minutes" => 2 * size * 60 seconds.
     python cluster/make_gvns_manifest.py --sets synthetic real --seeds 5 \
         --out cluster/gvns_manifest.csv
 
-``--n3`` selects the N3 configuration: ``sweep`` is the method as described in
-the paper (detours around a prefix of the most congested storages); ``single``
-reproduces the arXiv v1 runs, in which two arguments of the N3 call were
-transposed and only the single most congested storage was avoided.  Send the two
-configurations to *different* output directories -- the tags are identical.
+``--n3`` selects the N3 configuration.  ``single`` (the default) is what the paper
+reports: only the most congested storage is avoided.  ``sweep`` avoids a whole
+prefix of |V|/5..|V|/4 congested storages; it was measured over the full benchmark
+and is not better (see cluster/compare_configs.py).  Send the two configurations to
+*different* output directories -- the tags are identical.
 """
 import argparse
 import csv
@@ -34,7 +34,7 @@ def main():
     ap.add_argument("--cap", type=float, default=50)
     ap.add_argument("--minutes-per-size", type=float, default=2.0,
                     help="wall budget = minutes_per_size * size (paper: 2)")
-    ap.add_argument("--n3", default="sweep", choices=["sweep", "single"],
+    ap.add_argument("--n3", default="single", choices=["single", "sweep"],
                     help="N3 configuration (see module docstring)")
     ap.add_argument("--variant", default="gvns",
                     choices=["gvns", "bvns", "vnd", "rvns"],

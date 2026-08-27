@@ -34,7 +34,7 @@ def main():
     ap.add_argument("--minutes-per-size", type=float, default=2.0)
     ap.add_argument("--names", nargs="*", default=None,
                     help="restrict to these instance names (default: all in --sizes)")
-    ap.add_argument("--n3", default="sweep", choices=["sweep", "single"],
+    ap.add_argument("--n3", default="single", choices=["single", "sweep"],
                     help="N3 configuration; must match the full-GVNS run it is compared against")
     ap.add_argument("--out", default="cluster/ablation_manifest.csv")
     args = ap.parse_args()

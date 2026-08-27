@@ -109,7 +109,7 @@ capacities and a step-wise vehicle cost term.
 multicommodity network design (MCND)~\cite{gendron1999,crainic2000}, which is
 NP-hard. Exact approaches solve path-based formulations by column generation and
 branch-and-price~\cite{barnhart1998}; at practical scale heuristics dominate,
-notably cycle-based neighbourhoods inside tabu search~\cite{ghamlouche2003},
+notably cycle-based neighborhoods inside tabu search~\cite{ghamlouche2003},
 local branching~\cite{rodriguez2010} and matheuristics that call a MILP solver on
 restricted subproblems~\cite{hewitt2010}. Metaheuristics for multi-commodity flow
 more broadly are surveyed in~\cite{crainic2021}. Cost functions of the kind
@@ -163,7 +163,7 @@ $s_k\in \Vv$ to a destination $t_k\in \Vv$.
 The problem is to route all requests so as to minimise the total vehicle movement
 cost plus the total transit reload cost, subject to demand satisfaction, edge
 vehicle capacities and node transshipment capacities. It is thus a capacitated
-multi-commodity network design problem with step edge costs and node
+multicommodity network design problem with step edge costs and node
 transshipment capacities, and it admits two equivalent formulations, arc-based
 and path-based, given next. Capacities and costs are treated as constants; on
 real networks they vary with the time of day, a point we return to in
@@ -492,9 +492,11 @@ Init.\ MILP limit & $300$\,s
 Redistrib.\ MILP gap & $1\%$
   & Exact budget & $30$\,min--$4$\,h\\
 $\tau_{\mathrm{shk}}$ ($N_1$\,/\,rest) & $10{+}|V|$\,/\,$100{+}2|V|$\,s
-  & $\tau_{\mathrm{vnd}}$ ($N_1$\,/\,rest) & $25$\,/\,$70$\,s\\
+  & $\tau_{\mathrm{vnd}}$ ($N_1$\,/\,rest) & $25$\,/\,$70$\,s$^{*}$\\
 \bottomrule
 \end{tabular}
+\\[2pt]
+{\footnotesize $^{*}$ $15$\,/\,$50$\,s at $|V|=100$.}
 \end{table}
 
 Lacking known optima, we compare GVNS against four references. The \emph{LP
@@ -590,13 +592,13 @@ taking.
 \emph{Third, GVNS matches or beats the exact solver at equal time, increasingly
 so with size.} On small instances the time-limited MIP incumbent essentially
 ties GVNS ($Ratio_{\text{MIP}}\approx1.00$ for $|V|\le30$); from $|V|=45$ the
-exact solver falls behind sharply, returning solutions $1.26$--$1.55\times$ more
+exact solver falls behind sharply, returning solutions $1.26$--$1.54\times$ more
 expensive than GVNS at $|V|=49$--$59$. In other words, for a comparable
 wall-clock budget the exact solver is up to $\sim\!55\%$ worse than GVNS. Tight
 dual bounds are available up to $|V|=59$; for $|V|\gtrsim90$ the arc model reaches
 millions of variables and the exact branch-and-bound becomes intractable, leaving
 only the closed-form but loose LP-relaxation bound. Even there GVNS keeps
-improving on its rounded-LP start by large factors ($2.2$--$3.0\times$,
+improving on its rounded-LP start by large factors ($2.2$--$3.1\times$,
 Table~\ref{tab:results}).
 
 \emph{Fourth, the real-geometry networks mirror the synthetic ones}: the gap to
@@ -626,15 +628,13 @@ size (below the line at $1.0$ is better than GVNS, above is worse). Right axis
 % ---------------------------------------------------------------------
 \begin{table}[t]
 \centering
-\caption{Results on the synthetic instances (top, aggregated by network size,
-$n$ instances each) and on the real-geometry networks (bottom, one instance each).
-$gap_{\mathrm{LB}}$ is the GVNS optimality gap to the best MIP dual bound, a valid
-lower bound; the three middle columns are objective ratios of the LP relaxation,
-the rounded LP and the time-limited MIP incumbent to GVNS; $\sigma$ is the
+\caption{Results on the synthetic instances (top, by network size, $n$ instances
+each) and on the real-geometry networks (bottom). Metrics are as defined in
+Section~\ref{sec:experiments}: $gap_{\mathrm{LB}}$ is the gap to the best MIP dual
+bound and the three middle columns are objective ratios to GVNS; $\sigma$ is the
 across-seed standard deviation as a fraction of the mean, $\bar t$ the mean GVNS
-run time. ``$\dagger$'' marks sizes at which the arc model has millions of
-variables and the exact branch-and-bound is intractable; the LP-relaxation and
-rounded-LP bounds remain available in closed form.}
+run time. ``$\dagger$'': the arc model has millions of variables and the exact
+branch-and-bound is intractable, leaving only the closed-form LP bounds.}
 \label{tab:results}
 \small
 \setlength{\tabcolsep}{4pt}
@@ -691,7 +691,7 @@ Variant & Synthetic & Real & $\bar t/\bar t_{\mathrm{GVNS}}$\\
 \midrule
 \multicolumn{4}{l}{\emph{Leave-one-out neighborhood ablation}}\\
 without $N_1$ (reload-aware shortest paths) & $+0.8\%$ & $+0.8\%$ & $0.80$\\
-without $N_2$ (partially loaded edges)      & $+4.0\%$ & $+1.6\%$ & $0.52$\\
+without $N_2$ (partially loaded edges)      & $+3.9\%$ & $+1.6\%$ & $0.52$\\
 without $N_3$ (congestion detours)          & $+0.1\%$ & $+0.2\%$ & $0.68$\\
 \midrule
 \multicolumn{4}{l}{\emph{Simplified search scheme}}\\
@@ -713,13 +713,13 @@ operates at capacity (Figure~\ref{fig:solution}), disabling it costs $4.0\%$.
 The last row replaces the VND by a single-neighborhood local search over $N_1$,
 keeping the same shake over $N_1$--$N_3$: this is the basic (``pure'') VNS, and
 the gap to it measures what the \emph{general} part of GVNS is worth. That effect
-is real but modest and strongly size-dependent. Counting an instance as decided
-only when the difference exceeds the across-seed spread of both runs, GVNS wins
-five of sixteen instances, Basic VNS one, and ten are ties; all but one decided
-instance has $|V|\ge50$, where GVNS leads by $1.1$--$2.0\%$, whereas below
-$|V|=30$ the two are indistinguishable. Basic VNS needs only $0.63$ of the GVNS
-time, so it is preferable under a tight budget on small networks, while the full
-VND earns its cost as the path space grows. The components are thus not equally
+is real but modest, and it grows with instance size. Counting an instance as
+decided only when the difference exceeds the across-seed spread of both runs, GVNS
+is better on seven of the sixteen instances, Basic VNS on one, and eight are ties.
+What changes with size is the margin rather than the outcome: where GVNS wins it
+leads by $0.2$--$0.6\%$ at $|V|\le28$ but by $1.1$--$2.0\%$ at $|V|\ge50$. Basic
+VNS needs only $0.63$ of the GVNS time, so the full VND earns its cost as the path
+space grows. The components are thus not equally
 important: $N_2$ dominates, the VND structure matters mainly at scale, and $N_3$
 is reserved for capacity-tight instances.
 
@@ -740,7 +740,7 @@ the medium ones; its optimality gap grows with size, as the path space explodes.
 The component study showed that consolidating flow over partially loaded edges
 ($N_2$) is the dominant operator, that congestion detours ($N_3$) pay off only on
 capacity-tight instances, and that the full VND is worth $1$--$2\%$ over a basic
-VNS on the larger networks but nothing below $|V|=30$.
+VNS on the larger networks and a few tenths of a percent on the smaller ones.
 
 Two extensions stand out. The model treats capacities as static, whereas on real
 networks both road throughput and reload demand vary with the time of day; moving

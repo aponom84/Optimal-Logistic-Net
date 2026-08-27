@@ -142,7 +142,8 @@ offline**:
 ```bash
 python cluster/build_table.py            # -> Results/final_per_instance.csv, final_by_size.csv
                                          #    + the LaTeX rows of Table 2 on stdout
-python cluster/build_ablation_table.py   # -> Results/components.csv + Table 3 rows
+python cluster/build_ablation_table.py --n3 single --max-seed 5 \
+    --out Results/components_A.csv       # -> Table 3 rows
 python cluster/exact_tuning_table.py     # -> Results/exact_tuning.csv (solver-parameter study)
 python cluster/plot_results.py           # -> papers/GVNS/figs/{synthetic,real}_ratios.pdf (Fig. 2)
 python cluster/plot_solution.py --instance Generated_Data/Real_Graph/Germany \
@@ -209,11 +210,13 @@ extra seeds are added by re-running with a larger `--seeds`. `cluster/aggregate.
 gives a per-size summary of the exact solves. Then rebuild the tables and figures
 as in Section 5.
 
-**N3 configuration.** `--n3 sweep` (the default) runs N3 as described in the
-paper, avoiding a prefix of the most congested storages; `--n3 single` reproduces
-the configuration of arXiv v1, in which two arguments of the N3 call were
-transposed so that only the single most congested storage was avoided. Send the
-two configurations to different output directories — the job tags are identical.
+**N3 configuration.** `--n3 single` (the default) is the rule the paper reports:
+N3 avoids only the most congested storage. `--n3 sweep` avoids a whole prefix of
+`|V|/5`–`|V|/4` congested storages; both were run over the full benchmark with ten
+seeds and are indistinguishable overall (44 of 50 instances within across-seed
+noise, `cluster/compare_configs.py`), but `sweep` loses N3's benefit on the
+capacity-tight networks. Send the two configurations to different output
+directories — the job tags are identical.
 
 ### Generating fresh synthetic instances
 

@@ -59,7 +59,7 @@ def main():
     variant = (row.get("variant", "") or "gvns").strip()
     if variant not in VARIANTS:
         raise SystemExit(f"unknown variant {variant!r}; expected one of {sorted(VARIANTS)}")
-    n3 = (row.get("n3", "") or "sweep").strip()
+    n3 = (row.get("n3", "") or "single").strip()
     if n3 not in ("sweep", "single"):
         raise SystemExit(f"unknown n3 mode {n3!r}; expected 'sweep' or 'single'")
     print(f"[run] tag={row['tag']} seed={seed} time_limit={time_limit}s "

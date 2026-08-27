@@ -37,7 +37,7 @@ def main():
                     help="restrict to these instance names (default: all in --sizes)")
     ap.add_argument("--variants", nargs="+", default=["bvns"],
                     choices=["bvns", "vnd", "rvns"])
-    ap.add_argument("--n3", nargs="+", default=["sweep"], choices=["sweep", "single"],
+    ap.add_argument("--n3", nargs="+", default=["single"], choices=["single", "sweep"],
                     help="N3 configuration(s); each must match a full-GVNS run")
     ap.add_argument("--seeds", type=int, default=5)
     ap.add_argument("--seed0", type=int, default=1)
