@@ -144,25 +144,24 @@ problem-specific heuristics do well on real-life logistic routing, such as the
 truck-and-trailer routing problem with time windows and split
 deliveries~\cite{batsyn2014ttrp,batsyn2015heuristic}.
 
-No third-party solver targets the variant studied here: published MCND codes
+We are not aware of an existing solver for this variant. Published MCND codes
 charge a \emph{fixed} cost per open arc rather than a per-vehicle step cost, and
-none of them bounds the volume transshipped at a node, so a head-to-head comparison
-would be between different problems. Nor are there published results to compare
-with, since the instance corpus we published earlier~\cite{benchmark,benchmark-data}
-supplies networks and demands but no solutions. The evaluation below is therefore
-against bounds and general-purpose solvers on the identical model, and it
-establishes the first reference values on that corpus.
+they do not bound the volume transshipped at a node, so results obtained with them
+would not be comparable. The instance corpus we published
+earlier~\cite{benchmark,benchmark-data} contains networks and demands but no
+solutions, so there are no published objective values for these instances either.
+We therefore compare GVNS with bounds and general-purpose solvers on the same
+model.
 
-\paragraph{Contributions.} We formalise the problem and give equivalent arc-based
-and path-based MILP models with their linear relaxation
-(Section~\ref{sec:model}); we design a GVNS that searches the space of commodity
-paths through three problem-specific neighborhoods, which exploit reload costs,
-partial vehicle loads and storage congestion (Section~\ref{sec:gvns}); and we
-report a computational study on that corpus
-(Section~\ref{sec:data}) comparing GVNS against the LP relaxation, its rounded
+\paragraph{Contributions.} We state the problem and give equivalent arc-based and
+path-based MILP models with their linear relaxation (Section~\ref{sec:model}). We
+describe a GVNS that works in the space of commodity paths, with three
+neighborhoods based on reload costs, partial vehicle loads and storage congestion
+(Section~\ref{sec:gvns}). We report a computational study on that corpus
+(Section~\ref{sec:data}), comparing GVNS with the LP relaxation, its rounded
 version, and the dual bounds and incumbents of an exact solver
-(Section~\ref{sec:experiments}), together with a component analysis that isolates
-the contribution of each neighborhood and of the VND itself.
+(Section~\ref{sec:experiments}), and an analysis of how much each neighborhood and
+the VND contribute.
 
 \section{Problem statement and model}
 \label{sec:model}
