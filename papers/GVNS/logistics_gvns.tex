@@ -41,6 +41,12 @@
 \newcommand{\Real}{\mathbb{R}}
 \newcommand{\Int}{\mathbb{Z}}
 
+% llncs sets \flushbottom, so short pages are filled by stretching whatever
+% vertical glue they contain -- which on text pages means the \paragraph skips,
+% inflating them from 12pt to nearly 30pt.  \raggedbottom keeps those skips at
+% their natural size and leaves the slack at the foot of the page instead.
+\raggedbottom
+
 \begin{document}
 
 \title{A General Variable Neighborhood Search for Logistic Network
