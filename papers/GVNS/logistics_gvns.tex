@@ -127,14 +127,15 @@ problem-specific heuristics do well on real-life logistic routing, such as the
 truck-and-trailer routing problem with time windows and split
 deliveries~\cite{batsyn2014ttrp,batsyn2015heuristic}.
 
-No public solver or benchmark exists for the variant studied here: published MCND
-codes charge a \emph{fixed} cost per open arc rather than a per-vehicle step cost,
-and none of them bounds the volume transshipped at a node, so a head-to-head
-comparison would be between different problems. We therefore evaluate against what
-is comparable on the identical model---two state-of-the-art general MILP solvers,
-the valid dual bounds their branch-and-bound produces, and simpler VNS schemes
-built from our own code---and release the benchmark so that future methods can be
-compared directly.
+No third-party solver targets the variant studied here: published MCND codes
+charge a \emph{fixed} cost per open arc rather than a per-vehicle step cost, and
+none of them bounds the volume transshipped at a node, so a head-to-head comparison
+would be between different problems. We therefore evaluate against what is
+comparable on the identical model---two state-of-the-art general MILP solvers, the
+valid dual bounds their branch-and-bound produces, and simpler VNS schemes built
+from our own code---and we run on the open benchmark we published
+earlier~\cite{benchmark,benchmark-data}, so that future methods can be compared
+with ours directly.
 
 \paragraph{Contributions.} We formalise the problem and give equivalent arc-based
 and path-based MILP models with their linear relaxation
