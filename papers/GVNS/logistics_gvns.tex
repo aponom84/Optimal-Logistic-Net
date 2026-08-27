@@ -84,9 +84,9 @@ logistic networks calibrated on real road graphs of nine European countries, fiv
 U.S.\ states and the European part of Russia. On 35 synthetic and 15
 real-geometry instances with up to 150 storages, GVNS returns solutions within
 about one percent of the best dual bound on small networks---a branch-and-bound
-lower bound substantially tighter than the LP relaxation---and for a comparable
-wall-clock budget is up to $55\%$ better than a time-limited exact solver on the
-medium instances.
+lower bound substantially tighter than the LP relaxation---while on the medium
+instances a time-limited exact solver given a comparable wall-clock budget returns
+solutions up to $55\%$ more expensive than those of GVNS.
 
 \keywords{multi-commodity flow \and network design \and variable neighborhood
 search \and metaheuristics \and mixed integer programming \and logistics}
@@ -593,8 +593,9 @@ taking.
 so with size.} On small instances the time-limited MIP incumbent essentially
 ties GVNS ($Ratio_{\text{MIP}}\approx1.00$ for $|V|\le30$); from $|V|=45$ the
 exact solver falls behind sharply, returning solutions $1.26$--$1.54\times$ more
-expensive than GVNS at $|V|=49$--$59$. In other words, for a comparable
-wall-clock budget the exact solver is up to $\sim\!55\%$ worse than GVNS. Tight
+expensive than GVNS at $|V|=49$--$59$, and $1.555\times$ on average over the five
+$|V|=50$ instances---that is, up to $55\%$ more expensive for a comparable
+wall-clock budget. Tight
 dual bounds are available up to $|V|=59$; for $|V|\gtrsim90$ the arc model reaches
 millions of variables and the exact branch-and-bound becomes intractable, leaving
 only the closed-form but loose LP-relaxation bound. Even there GVNS keeps
@@ -734,9 +735,10 @@ operating in the path space through three problem-specific neighborhoods.
 
 
 On $35$ synthetic and $15$ real-geometry instances of up to $150$ storages, GVNS
-came within about one percent of the best dual bound on small networks and, for a
-comparable budget, was up to $55\%$ cheaper than a time-limited exact solver on
-the medium ones; its optimality gap grows with size, as the path space explodes.
+came within about one percent of the best dual bound on small networks, and on the
+medium ones a time-limited exact solver with a comparable budget returned solutions
+up to $55\%$ more expensive; its optimality gap grows with size, as the path space
+explodes.
 The component study showed that consolidating flow over partially loaded edges
 ($N_2$) is the dominant operator, that congestion detours ($N_3$) pay off only on
 capacity-tight instances, and that the full VND is worth $1$--$2\%$ over a basic
