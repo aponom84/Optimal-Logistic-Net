@@ -7,7 +7,7 @@
 #
 #SBATCH --job-name=olnet_gvns
 #SBATCH --partition=rocky
-#SBATCH --account=proj_1902
+#SBATCH --account=YOUR_ACCOUNT   # set to your SLURM project
 #SBATCH --cpus-per-task=4
 #SBATCH --time=12:00:00
 #SBATCH --output=cluster/logs/%A_%a.out

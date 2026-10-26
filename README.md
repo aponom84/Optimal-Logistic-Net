@@ -163,9 +163,9 @@ source is regenerated from the conference one with
 ## 6. Re-running the full study (cluster)
 
 The experiments were run on the HSE *cHARISMa* HPC cluster with SLURM job arrays.
-The scripts are repo-root-relative and take the cHARISMa `rocky` partition and
-account `proj_1844` — **edit the `#SBATCH --account`/`--partition` lines in
-`cluster/*.slurm` for your site**, then:
+The scripts are repo-root-relative. The `#SBATCH --account` line in
+`cluster/*.slurm` is a placeholder (`YOUR_ACCOUNT`) and `--partition` is set to
+the cHARISMa `rocky` queue — **edit both for your site**, then:
 
 ```bash
 # (1) exact dual bounds + incumbents (both backends on every instance)
@@ -260,7 +260,21 @@ form):
 }
 ```
 
-**GVNS solver** (this repository's algorithm and experiments):
+**GVNS solver** (this repository's algorithm and experiments). Preprint:
+[arXiv:2610.30139](https://arxiv.org/abs/2610.30139).
+
+```bibtex
+@article{kovaleva2026gvnsarxiv,
+  author  = {Kovaleva, Varvara and Ponomarenko, Alexander},
+  title   = {A General Variable Neighborhood Search for Logistic Network Flow
+             Design with Nonlinear Edge Costs and Transshipment Capacities},
+  journal = {arXiv preprint arXiv:2610.30139},
+  year    = {2026},
+  url     = {https://arxiv.org/abs/2610.30139}
+}
+```
+
+Conference version:
 
 ```bibtex
 @inproceedings{kovaleva2026gvns,
