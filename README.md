@@ -1,5 +1,7 @@
 # Optimal-Logistic-Net
 
+![GVNS solution on the Germany network of the benchmark corpus: vehicle flows and storage congestion](assets/banner.png)
+
 Code and data for **logistic transport network flow problems with nonlinear
 (vehicle-induced) edge costs and hard storage transshipment capacities**: a
 benchmark generator and instance corpus, an exact MILP solver, and a General
