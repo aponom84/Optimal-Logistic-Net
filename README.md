@@ -17,7 +17,7 @@ This repository backs two papers:
    Search for Logistic Network Flow Design with Nonlinear Edge Costs and
    Transshipment Capacities.* Submitted to a Springer LNCS conference volume,
    2026. The `cluster/` pipeline, `exact_solver.py` and `VNS.py` reproduce its
-   computational study (Section 6).
+   computational study (Section 6). Preprint available on [arxiv](https://arxiv.org/abs/2610.30139)
 
 ---
 
