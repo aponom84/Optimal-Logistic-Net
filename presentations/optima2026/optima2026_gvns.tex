@@ -335,7 +335,7 @@ path exactly.}
 \end{itemize}
 \note{Preprocessing: complete the graph, build the reload-aware graph $G'$,
 precompute 20 shortest paths per request. Shake vs VND path counts: 5 random
-pool paths vs 1--3 for $N_1$; stop at 3 paths / $5C$ vs 2 / $1C$ for $N_2$;
+pool paths vs 1--3 for $N_1$; stop at 3 fully loaded paths / $5C$ free room vs 2 / $1C$ for $N_2$;
 3 detours vs 1 for $N_3$. Budgets: $\tau_{\mathrm{shk}}=10+|V|$ / $100+2|V|$\,s,
 $\tau_{\mathrm{vnd}}=25$ / $70$\,s ($N_1$ / rest; 15 / 50\,s at $|V|=100$), so
 for $N_1$ the shake budget is smaller than the VND budget while $|V|\le14$.
@@ -469,7 +469,7 @@ which 20 paths enter the pool.}
 \medskip
 \begin{itemize}
 \item shortest paths on $G''$ run through partially loaded vehicles
-\item dynamic number of new paths: stop after 2 fully loaded paths or free room $>1C$ (VND); 3 paths / $5C$ (Shake)
+\item dynamic number of new paths per request: stop after 2 fully loaded paths or accumulated free room $\ge1C$ (VND); 3 fully loaded paths or $\ge5C$ (Shake)
 \end{itemize}
 \column{0.54\textwidth}
 \begin{block}{Graph $G''$ favours free room ($\alpha=0.5$)}
